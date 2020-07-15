@@ -1,0 +1,2384 @@
+openapi: 3.0.0
+info:
+  title: Pesta Sains Nasional 2020
+  description: "## Description\nAPI for Pesta Sains Nasional 2020 Website. \n\n##\
+    \ Development Team\nDeveloped by codepanda.id team\n\n## Github repo\n[PSN 2020\
+    \ API Repo](https://github.com/muhammad-fakhri/psn2020-backend)\n\n### Still in\
+    \ development process.\n"
+  contact:
+    name: codepanda.id
+    url: https://codepanda.id
+    email: admin@codepanda.id
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0-draft
+servers:
+- url: http://localhost:3000
+  description: Localdev Server
+- url: http://34.101.145.156:8080
+  description: Test Server
+- url: https://apipestasains.ipb.ac.id
+  description: Production Server
+tags:
+- name: Accomodation
+- name: Auth
+- name: Bill
+- name: Booking
+- name: Contest
+- name: School
+- name: Student
+- name: Teacher
+- name: Team
+paths:
+  /accomodation:
+    get:
+      tags:
+      - Accomodation
+      summary: Get all accomodation
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+    put:
+      tags:
+      - Accomodation
+      summary: Update accomodation
+      description: Update accomodation. Only admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccommodationWithId'
+        required: true
+      responses:
+        "200":
+          description: Accomodation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Accommodation with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Accomodation
+      summary: Create accommodation
+      description: Create new accommodation. Only admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Accommodation'
+        required: true
+      responses:
+        "201":
+          description: Accommodation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /accomodation/{accomodationId}:
+    delete:
+      tags:
+      - Accomodation
+      summary: Delete accomodation
+      description: Delete accomodation. Only admin can use this endpoint.
+      parameters:
+      - name: accomodationId
+        in: path
+        description: Accomodation ID that you want to delete
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Accomodation deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Accommodation with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404'
+      security:
+      - bearerAuth: []
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: School Login
+      description: Login user (School's admin) to system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+        required: true
+      responses:
+        "200":
+          description: Login Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: Login Fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_401'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+  /auth/registration:
+    post:
+      tags:
+      - Auth
+      summary: School Registration
+      description: Register school by school's admin. Then login to system.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolWithPassword'
+        required: true
+      responses:
+        "200":
+          description: Registration Success or email already exist. If the email already
+            exists then there will only be a message in response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+  /auth/login/admin:
+    post:
+      tags:
+      - Auth
+      summary: Admin Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_1'
+        required: true
+      responses:
+        "200":
+          description: Admin Login Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_3'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: Login Fail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_401'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+  /auth/registration/admin:
+    post:
+      tags:
+      - Auth
+      summary: Admin Registration
+      description: Register new admin and then login to the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminWithPassword'
+        required: true
+      responses:
+        "200":
+          description: Registration Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_4'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+  /booking:
+    get:
+      tags:
+      - Booking
+      summary: Get All Booking
+      description: "Get all the booking data  \nData returned depends on the type\
+        \ of user. If the user is  \n* Admin, then all booking data will be returned\n\
+        * School, then only the booking data belonging to the school will be returned\
+        \      "
+      parameters:
+      - name: isFinal
+        in: query
+        description: |
+          Final status of the booking. If set to "true", then only booking data that is final will be returned
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_5'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Booking
+      summary: Create Booking
+      description: Create new booking. Only school's admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_1'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /booking/{bookingId}:
+    delete:
+      tags:
+      - Booking
+      summary: Delete Booking
+      description: Delete booking that are not final, if the booking is final then
+        it will fail to delete. Only school's admin can use this endpoint.
+      parameters:
+      - name: bookingId
+        in: path
+        description: Booking ID that you want to delete
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Booking deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Booking with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /booking/download:
+    get:
+      tags:
+      - Booking
+      summary: Generate Booking Excel File
+      description: Download the excel file filled with all booking data
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xlsx:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /contest:
+    get:
+      tags:
+      - Contest
+      summary: Get all contests
+      description: Get all the contest data and how many teams have registered in
+        the contest
+      parameters:
+      - name: registrationStatus
+        in: query
+        description: "Registration status of the contest.  \nCan be filled with\n\
+          * \"open\", for contests which are still open for registration\n* \"close\"\
+          , for contests that have already been closed  \n* Not filled, if this parameter\
+          \ is not used then the entire contest data will be retrieved\n"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_6'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+    put:
+      tags:
+      - Contest
+      summary: Update contest
+      description: Update contest. Only admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContestWithId'
+        required: true
+      responses:
+        "200":
+          description: Contest updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Contest with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Contest
+      summary: Create contest
+      description: Create new contest. Only admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contest'
+        required: true
+      responses:
+        "201":
+          description: Contest created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_2'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /contest/{contestId}:
+    delete:
+      tags:
+      - Contest
+      summary: Delete contest
+      description: Delete contest. Only admin can use this endpoint.
+      parameters:
+      - name: contestId
+        in: path
+        description: Contest ID that you want to delete
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Contest deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Contest with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /schools:
+    get:
+      tags:
+      - School
+      summary: List all schools
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_7'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /schools/detail/{schoolId}:
+    get:
+      tags:
+      - School
+      summary: Get school detail
+      description: Get school detail by school ID
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_8'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Requested resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /schools/search:
+    get:
+      tags:
+      - School
+      summary: Search school
+      parameters:
+      - name: searchString
+        in: query
+        description: Search string
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: skip
+        in: query
+        description: Determine the starting point of the document search (skip search),
+          used in pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        description: Limit the amount of data taken from the database
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_9'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Requested resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students:
+    put:
+      tags:
+      - Student
+      summary: Edit student
+      description: Edit student data. Only school admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentWithId'
+        required: true
+      responses:
+        "200":
+          description: "OK  \nPossible value of \"success\"   \n* \"true\", means\
+            \ the data was successfully changed\n* \"false\", means the data failed\
+            \ to change\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_10'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Student data with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404_1'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Student
+      summary: Create student
+      description: Create new student. Only school admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+        required: true
+      responses:
+        "201":
+          description: Student added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_3'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students/{studentId}:
+    delete:
+      tags:
+      - Student
+      summary: Delete student
+      description: Delete student data. Only school admin in the same school as student
+        whose data will be deleted can use this endpoint.
+      parameters:
+      - name: studentId
+        in: path
+        description: ID of the student whose data will be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Student deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_10'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Student data with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404_1'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students/school/{schoolId}:
+    get:
+      tags:
+      - Student
+      summary: List student
+      description: Display all student data in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: "Can be filled with  \n* school ID, to display all student data\
+          \ in a school\n* \"all\", to display all student data in the database. Only\
+          \ can be used by admin\n"
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_11'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students/count/{schoolId}:
+    get:
+      tags:
+      - Student
+      summary: Count student
+      description: Get the number of students in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_12'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students/available/{schoolId}:
+    get:
+      tags:
+      - Student
+      summary: Available student
+      description: Get students who have not been added to any team
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_13'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /students/unbooked-accommodation/school/{schoolId}:
+    get:
+      tags:
+      - Student
+      summary: Unbooked student
+      description: Get students who haven't booked accommodation
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_13'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers:
+    get:
+      tags:
+      - Teacher
+      summary: List all teacher
+      description: List all teacher in database. Only admin can use this endpoint.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_14'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - Teacher
+      summary: Edit teacher
+      description: Edit teacher data. Only school admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherWithId'
+        required: true
+      responses:
+        "200":
+          description: "OK  \nPossible value of \"success\"   \n* \"true\", means\
+            \ the data was successfully changed\n* \"false\", means the data failed\
+            \ to change\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_10'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Teacher data with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404_2'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Teacher
+      summary: Create teacher
+      description: Create new teacher. Only school admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Teacher'
+        required: true
+      responses:
+        "201":
+          description: Teacher created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_4'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers/{teacherId}:
+    get:
+      tags:
+      - Teacher
+      summary: Detail teacher
+      description: Get detail of a teacher. Only school admin can use this endpoint.
+      parameters:
+      - name: teacherId
+        in: path
+        description: ID of the teacher whose detail will be retrieved
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_15'
+        "404":
+          description: Teacher data with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404_2'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - Teacher
+      summary: Delete teacher
+      description: Delete teacher data. Only school admin in the same school as teacher
+        whose data will be deleted can use this endpoint.
+      parameters:
+      - name: teacherId
+        in: path
+        description: ID of the teacher whose data will be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Teacher deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_10'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Teacher data with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_404_2'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers/school/{schoolId}:
+    get:
+      tags:
+      - Teacher
+      summary: List teacher by school
+      description: Display all teacher data in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: School ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_16'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers/count/{schoolId}:
+    get:
+      tags:
+      - Teacher
+      summary: Count teacher
+      description: Get the number of teachers in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_17'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers/unpaid/school/{schoolId}:
+    get:
+      tags:
+      - Teacher
+      summary: Unpaid teacher
+      description: Get teachers who have not paid the registration fee
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_18'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teachers/unbooked-accommodation/school/{schoolId}:
+    get:
+      tags:
+      - Teacher
+      summary: Unbooked teacher
+      description: Get teachers who haven't booked accommodation
+      parameters:
+      - name: schoolId
+        in: path
+        description: ID of the school
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_18'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_default'
+      security:
+      - bearerAuth: []
+  /teams:
+    get:
+      tags:
+      - Team
+      summary: List team
+      description: "Get list team  \nChoose one between school parameter or contest\
+        \ parameter, they cannot be used together. If no parameters are used, it will\
+        \ return the entire list of teams in the database\n"
+      parameters:
+      - name: school
+        in: query
+        description: ID of the school. Return the team list by school
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: contest
+        in: query
+        description: ID of the contest. Return the team list by contest
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: populateContest
+        in: query
+        description: Populate contest data
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: populateStudent
+        in: query
+        description: Populate student data
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Team created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_19'
+        "404":
+          description: School or contest set as parameter was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - Team
+      summary: Edit team
+      description: Edit team. Only school admin in the same school with the team can
+        use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_2'
+        required: true
+      responses:
+        "200":
+          description: Team edited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_20'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Team with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Team
+      summary: Create team
+      description: Create new team. Only school admin can use this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Team'
+        required: true
+      responses:
+        "200":
+          description: Team created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_21'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /teams/{teamId}:
+    get:
+      tags:
+      - Team
+      summary: Get team detail
+      parameters:
+      - name: teamId
+        in: path
+        description: Team ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: populateContest
+        in: query
+        description: Set to true to populate the contest
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: populateStudent
+        in: query
+        description: Set to true to populate the student
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_21'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Team with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - Team
+      summary: Delete team
+      description: Delete team
+      parameters:
+      - name: teamId
+        in: path
+        description: ID of the team you want to delete
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Team deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_22'
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Team with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /teams/unpaid/school/{schoolId}:
+    get:
+      tags:
+      - Team
+      summary: List of unpaid team
+      description: Get list of unpaid team in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: School ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: populateContest
+        in: query
+        description: Set to true to populate the contest
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: populateStudent
+        in: query
+        description: Set to true to populate the student
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_23'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: School with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /teams/count/{schoolId}:
+    get:
+      tags:
+      - Team
+      summary: Count team
+      description: Get count of teams in a school
+      parameters:
+      - name: schoolId
+        in: path
+        description: School ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_24'
+        "401":
+          description: "Unauthorized    \nMight be caused by one of the following\
+            \ reasons\n* You do not have access to this source\n* Auth token is not\
+            \ supplied or invalid\n"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: School with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - bearerAuth: []
+  /teams/excel/contest/{contestId}:
+    get:
+      tags:
+      - Team
+      summary: Generate excel
+      description: Generate excel file from contest data
+      parameters:
+      - name: contestId
+        in: path
+        description: Contest ID that you want to create the excel file for
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK, returns an excel file
+          content:
+            application/xlsx:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: "Bad Request  \nOne of the required data in the request  \n\
+            body, query or parameter might not be provided\n"
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/Message'
+        "404":
+          description: Contest with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+components:
+  schemas:
+    Accommodation:
+      type: object
+      properties:
+        name:
+          type: string
+        quota:
+          type: integer
+        pricePerNight:
+          type: integer
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+    AccommodationWithId:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/Accommodation'
+    AccommodationFull:
+      allOf:
+      - $ref: '#/components/schemas/AccommodationWithId'
+      - type: object
+        properties:
+          reservedQuota:
+            type: integer
+    Admin:
+      required:
+      - email
+      - name
+      - username
+      type: object
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+    AdminWithPassword:
+      allOf:
+      - $ref: '#/components/schemas/Admin'
+      - required:
+        - password
+        type: object
+        properties:
+          password:
+            type: string
+            format: password
+    AdminFull:
+      allOf:
+      - required:
+        - _id
+        type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/AdminWithPassword'
+    Booking:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/Booking_user'
+        accommodation:
+          type: string
+          description: Accommodation ID
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Booking duration
+    BookingWithId:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+            description: Booking ID
+      - $ref: '#/components/schemas/Booking'
+    BookingFull:
+      allOf:
+      - $ref: '#/components/schemas/BookingWithId'
+      - type: object
+        properties:
+          isFinal:
+            type: string
+          isPaid:
+            type: string
+    Contest:
+      type: object
+      properties:
+        name:
+          type: string
+        memberPerTeam:
+          type: integer
+        maxTeam:
+          type: integer
+        img:
+          type: string
+        registrationStatus:
+          type: string
+        pricePerStudent:
+          type: integer
+        registeredTeam:
+          type: integer
+    ContestWithId:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/Contest'
+    Message:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+    School:
+      required:
+      - address
+      - email
+      - name
+      - phone
+      - username
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+    SchoolWithId:
+      allOf:
+      - required:
+        - _id
+        type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/School'
+    SchoolFull:
+      allOf:
+      - $ref: '#/components/schemas/SchoolWithId'
+      - type: object
+        properties:
+          password:
+            type: string
+            format: password
+    SchoolWithPassword:
+      allOf:
+      - $ref: '#/components/schemas/School'
+      - type: object
+        properties:
+          password:
+            type: string
+            format: password
+    Student:
+      required:
+      - email
+      - name
+      - phone
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+    StudentWithId:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/Student'
+    StudentFull:
+      allOf:
+      - $ref: '#/components/schemas/StudentWithId'
+      - type: object
+        properties:
+          team:
+            type: string
+          school:
+            type: string
+            description: This student's school ID
+          accommodationBooking:
+            type: boolean
+            default: false
+          accommodationBookingId:
+            type: string
+            description: Booking ID
+    Teacher:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        NIP:
+          type: string
+        school:
+          type: string
+          description: School ID
+    TeacherWithId:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+      - $ref: '#/components/schemas/Teacher'
+    TeacherFull:
+      allOf:
+      - $ref: '#/components/schemas/TeacherWithId'
+      - type: object
+        properties:
+          isPaid:
+            type: boolean
+            default: false
+          accommodationBooking:
+            type: boolean
+            default: false
+          accommodationBookingId:
+            type: string
+            description: Booking ID
+    Team:
+      type: object
+      properties:
+        name:
+          type: string
+        contest:
+          type: string
+          description: Contest ID
+        students:
+          type: array
+          description: Array of student ID
+          items:
+            type: string
+    TeamFull:
+      allOf:
+      - type: object
+        properties:
+          _id:
+            type: string
+          isPaid:
+            type: boolean
+          school:
+            type: string
+            description: School ID
+      - $ref: '#/components/schemas/Team'
+    inline_response_200:
+      type: object
+      properties:
+        accommodations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccommodationFull'
+    inline_response_200_1:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - type: object
+        properties:
+          success:
+            type: boolean
+    inline_response_404:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - type: object
+        properties:
+          success:
+            type: boolean
+            default: false
+    inline_response_201:
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+        accommodation:
+          $ref: '#/components/schemas/AccommodationFull'
+    body:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    inline_response_200_2:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        school:
+          $ref: '#/components/schemas/SchoolFull'
+        token:
+          type: string
+    inline_response_401:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - example:
+          message: Login failed, username or password is wrong
+    inline_response_default:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    body_1:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    inline_response_200_3:
+      type: object
+      properties:
+        message:
+          type: string
+        admin:
+          $ref: '#/components/schemas/AdminFull'
+        token:
+          type: string
+    inline_response_200_4:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Admin Registration Success
+        admin:
+          $ref: '#/components/schemas/AdminFull'
+        token:
+          type: string
+          example: mnj231nnkjdn9jn12nmdasdaki1
+    inline_response_200_5:
+      type: object
+      properties:
+        bookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingFull'
+    inline_response_201_1:
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+          default: true
+        booking:
+          $ref: '#/components/schemas/BookingFull'
+    inline_response_200_6:
+      type: object
+      properties:
+        message:
+          type: string
+        contests:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContestWithId'
+    inline_response_201_2:
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+          default: true
+        contest:
+          $ref: '#/components/schemas/ContestWithId'
+    inline_response_200_7:
+      type: object
+      properties:
+        message:
+          type: string
+        schools:
+          type: array
+          items:
+            $ref: '#/components/schemas/School'
+    inline_response_200_8:
+      type: object
+      properties:
+        message:
+          type: string
+        school:
+          $ref: '#/components/schemas/School'
+    inline_response_200_9:
+      type: object
+      properties:
+        schools:
+          type: array
+          items:
+            $ref: '#/components/schemas/School'
+    inline_response_200_10:
+      required:
+      - message
+      - success
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+    inline_response_404_1:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - example:
+          message: Student data not found
+    inline_response_201_3:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+        student:
+          $ref: '#/components/schemas/StudentFull'
+    inline_response_200_11:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentFull'
+    inline_response_200_12:
+      required:
+      - totalStudent
+      type: object
+      properties:
+        totalStudent:
+          type: integer
+    inline_response_200_13:
+      required:
+      - students
+      type: object
+      properties:
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentFull'
+    inline_response_200_14:
+      type: object
+      properties:
+        message:
+          type: string
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherFull'
+    inline_response_404_2:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - example:
+          message: Teacher data not found
+    inline_response_201_4:
+      required:
+      - message
+      - teacher
+      type: object
+      properties:
+        message:
+          type: string
+        teacher:
+          $ref: '#/components/schemas/TeacherFull'
+    inline_response_200_15:
+      type: object
+      properties:
+        message:
+          type: string
+        teacher:
+          $ref: '#/components/schemas/TeacherFull'
+    inline_response_200_16:
+      required:
+      - message
+      - teachers
+      type: object
+      properties:
+        message:
+          type: string
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherFull'
+    inline_response_200_17:
+      required:
+      - totalStudent
+      type: object
+      properties:
+        totalTeacher:
+          type: integer
+    inline_response_200_18:
+      required:
+      - teachers
+      type: object
+      properties:
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherFull'
+    inline_response_200_19:
+      type: object
+      properties:
+        message:
+          type: string
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamFull'
+    body_2:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Team ID
+        name:
+          type: string
+        students:
+          type: array
+          description: Array of student ID
+          items:
+            type: string
+    inline_response_200_20:
+      type: object
+      properties:
+        message:
+          type: string
+    inline_response_200_21:
+      type: object
+      properties:
+        message:
+          type: string
+        team:
+          $ref: '#/components/schemas/TeamFull'
+    inline_response_200_22:
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+    inline_response_200_23:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamFull'
+    inline_response_200_24:
+      type: object
+      properties:
+        totalTeams:
+          type: integer
+    Booking_user:
+      type: object
+      properties:
+        type:
+          type: string
+          description: User type, "student" or "teacher"
+        id:
+          type: string
+          description: ID of the student or teacher who is the booking owner
+  responses:
+    BadRequest:
+      description: "Bad Request  \nOne of the required data in the request  \nbody,\
+        \ query or parameter might not be provided\n"
+      content:
+        'application/json:':
+          schema:
+            $ref: '#/components/schemas/Message'
+    Unexpected:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_response_default'
+    LoginFail:
+      description: Login Fail
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_response_401'
+    Unauthorized:
+      description: "Unauthorized    \nMight be caused by one of the following reasons\n\
+        * You do not have access to this source\n* Auth token is not supplied or invalid\n"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    NotFound:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    ContestNotFound:
+      description: Contest with the given ID was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    AccomodationNotFound:
+      description: Accommodation with the given ID was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_response_404'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
