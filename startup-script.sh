@@ -26,26 +26,16 @@ curl -s "https://storage.googleapis.com/signals-agents/logging/google-fluentd-in
 service google-fluentd restart &
 # [END logging]
 
+# Install dependencies from apt
+apt-get install -yq ca-certificates git nodejs build-essential supervisor wget
+
 # Installing mongodb
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
-echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
 apt-get update
 apt-get install -y mongodb-org
-cat > /etc/systemd/system/mongodb.service << EOF
-[Unit]
-Description=High-performance, schema-free document-oriented database
-After=network.target
-[Service]
-User=mongodb
-ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl start mongodb
-systemctl enable mongodb
-
-# Install dependencies from apt
-apt-get install -yq ca-certificates git nodejs build-essential supervisor
+systemctl start mongod
+systemctl enable mongod
 
 # Install nodejs
 mkdir /opt/nodejs
@@ -57,7 +47,7 @@ ln -s /opt/nodejs/bin/npm /usr/bin/npm
 # git requires $HOME and it's not set during the startup script.
 export HOME=/root
 git config --global credential.helper gcloud.sh
-git clone https://github.com/muhammad-fakhri/psn2020-backend.git  /opt/app
+git clone https://source.developers.google.com/p/psn2020/r/psn2020-backend  /opt/app/psn2020-backend
 
 # Install app dependencies
 cd /opt/app/psn2020-backend
