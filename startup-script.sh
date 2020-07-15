@@ -1,45 +1,22 @@
-#! /bin/bash
-#url : https://github.com/GoogleCloudPlatform/nodejs-getting-started/blob/master/7-gce/gce/startup-script.sh
-#	Copyright 2017, Google, Inc.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# [START startup]
 set -v
+
 
 # Talk to the metadata server to get the project id
 PROJECTID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+REPOSITORY="new-repo"
 
 # Install logging monitor. The monitor will automatically pick up logs sent to
 # syslog.
-# [START logging]
 curl -s "https://storage.googleapis.com/signals-agents/logging/google-fluentd-install.sh" | bash
 service google-fluentd restart &
-# [END logging]
 
 # Install dependencies from apt
-apt-get install -yq ca-certificates git nodejs build-essential supervisor wget
-
-# Installing mongodb
-wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
 apt-get update
-apt-get install -y mongodb-org
-systemctl start mongod
-systemctl enable mongod
+apt-get install -yq ca-certificates git build-essential supervisor
 
 # Install nodejs
 mkdir /opt/nodejs
-curl https://nodejs.org/dist/v4.2.2/node-v4.2.2-linux-x64.tar.gz | tar xvzf - -C /opt/nodejs --strip-components=1
+curl https://nodejs.org/dist/v8.12.0/node-v8.12.0-linux-x64.tar.gz | tar xvzf - -C /opt/nodejs --strip-components=1
 ln -s /opt/nodejs/bin/node /usr/bin/node
 ln -s /opt/nodejs/bin/npm /usr/bin/npm
 
@@ -47,14 +24,11 @@ ln -s /opt/nodejs/bin/npm /usr/bin/npm
 # git requires $HOME and it's not set during the startup script.
 export HOME=/root
 git config --global credential.helper gcloud.sh
-git clone https://source.developers.google.com/p/psn2020/r/psn2020-backend  /opt/app/psn2020-backend
+git clone https://source.developers.google.com/p/${PROJECTID}/r/${REPOSITORY} /opt/app/new-repo
 
 # Install app dependencies
-cd /opt/app/psn2020-backend
+cd /opt/app/new-repo
 npm install
-cat >./.env << EOF
-PORT=3000
-EOF
 
 # Create a nodeapp user. The application will run as this user.
 useradd -m -d /home/nodeapp nodeapp
@@ -63,7 +37,7 @@ chown -R nodeapp:nodeapp /opt/app
 # Configure supervisor to run the node app.
 cat >/etc/supervisor/conf.d/node-app.conf << EOF
 [program:nodeapp]
-directory=/opt/app/psn2020-backend
+directory=/opt/app/new-repo
 command=npm start
 autostart=true
 autorestart=true
@@ -77,5 +51,3 @@ supervisorctl reread
 supervisorctl update
 
 # Application should now be running under supervisor
-# [END startup]
-
