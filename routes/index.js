@@ -16,16 +16,16 @@ var BookingRouter = require('./Booking/BookingRouter');
 router.get('/', function (req, res, next) {
   return res.json({ message: "Welcome to Pesta Sains Nasional 2020 API" });
 });
-// router.use('/users', userRouter);
-// router.use('/auth', AuthRouter);
-// router.use('/students', StudentRouter);
-// router.use('/contests', ContestRouter);
-// router.use('/teams', TeamRouter);
-// router.use('/schools', SchoolRouter);
-// router.use('/params', ParamRouter);
-// router.use('/teachers', TeacherRouter);
-// router.use('/bills', BillRouter);
-// router.use('/accommodation', AccommodationRouter);
-// router.use('/booking', BookingRouter);
+router.use('/users', userRouter);
+router.use('/auth', AuthRouter);
+router.use('/students', StudentRouter);
+router.use('/contests', ContestRouter);
+router.use('/teams', TeamRouter);
+router.use('/schools', SchoolRouter);
+router.use('/params', ParamRouter);
+router.use('/teachers', TeacherRouter);
+router.use('/bills', BillRouter);
+router.use('/accommodation', AccommodationRouter);
+router.use('/booking', BookingRouter);
 
 module.exports = router;
