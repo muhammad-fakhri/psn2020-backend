@@ -40,10 +40,15 @@ tags:
 paths:
   /:
     get:
-      summary: index
+      summary: API Front Page Index
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+                  
   /accomodation:
     get:
       summary: Get all accomodation
