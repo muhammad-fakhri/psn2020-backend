@@ -1,7 +1,7 @@
 let express = require('express'),
     router = express.Router(),
     StudentController = require('./StudentController'),
-    {validateBody, schemas} = require('./StudentValidation'),
+    { validateBody, schemas } = require('./StudentValidation'),
     JWtController = require('../JWT/JWTController');
 
 router.post('/', JWtController.checkToken, JWtController.isSchool, validateBody(schemas.create), StudentController.create);

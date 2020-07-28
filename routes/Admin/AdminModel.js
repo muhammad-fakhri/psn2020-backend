@@ -12,12 +12,12 @@ let adminSchema = new Schema({
         required: true,
         unique: true
     },
-    email:{
+    email: {
         type: String,
         required: true,
         unique: true
     },
-    password:{
+    password: {
         type: String,
         required: true
     }
@@ -42,7 +42,7 @@ adminSchema.pre('save', async function (next) {
 
 adminSchema.methods.isValidPassword = async function (newPassword) {
     try {
-        console.log(newPassword,this.password);
+        console.log(newPassword, this.password);
         return await bcrypt.compare(newPassword, this.password);
     } catch (error) {
         throw new Error(error);

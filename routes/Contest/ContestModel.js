@@ -7,23 +7,23 @@ let contestSchema = new Schema({
         type: String,
         required: true
     },
-    memberPerTeam:{
+    memberPerTeam: {
         type: Number,
         required: true
     },
-    maxTeam:{
+    maxTeam: {
         type: Number,
         required: true
     },
-    img:{
+    img: {
         type: String,
         required: true
     },
-    pricePerStudent:{
+    pricePerStudent: {
         type: Number,
         required: true
     },
-    registrationStatus:{
+    registrationStatus: {
         type: String,
         enum: ['open', 'close'],
         default: 'open'

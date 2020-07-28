@@ -1,7 +1,7 @@
 let express = require('express'),
     router = express.Router(),
     AccomodationController = require('./AccomodationController'),
-    {validateBody, schemas} = require('./AccommodationValidation'),
+    { validateBody, schemas } = require('./AccommodationValidation'),
     JWtController = require('../JWT/JWTController');
 
 router.post('/', JWtController.checkToken, JWtController.isAdmin, validateBody(schemas.create), AccomodationController.create);

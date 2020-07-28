@@ -12,33 +12,33 @@ let bookingSchema = new Schema({
         enum: ['student', 'teacher'],
         required: true
     },
-    student:{
+    student: {
         type: Schema.Types.ObjectId,
         ref: 'Student'
     },
-    teacher:{
+    teacher: {
         type: Schema.Types.ObjectId,
         ref: 'Teacher'
     },
-    accommodation:{
+    accommodation: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Accommodation'
     },
-    isFinal:{
+    isFinal: {
         type: Boolean,
         default: false
     },
-    isPaid:{ //untuk sementara kayanya ga bakal ada tujuannya, tapi buat jaga-jaga ada aja
+    isPaid: { //untuk sementara kayanya ga bakal ada tujuannya, tapi buat jaga-jaga ada aja
         type: Boolean,
         default: false
     },
-    duration:{
+    duration: {
         type: Number,
         default: 1,
         required: true
     },
-    startDate:{
+    startDate: {
         type: Date,
         required: true
     }

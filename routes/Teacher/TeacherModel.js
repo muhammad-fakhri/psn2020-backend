@@ -6,37 +6,37 @@ let teacherSchema = new Schema({
         type: String,
         required: true
     },
-    email:{
+    email: {
         type: String,
         required: true,
         unique: true
     },
-    phone:{
+    phone: {
         type: String,
         required: true
     },
-    NIP:{
+    NIP: {
         type: String,
         required: true
     },
-    school:{
+    school: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'School'
     },
-    isPaid:{
+    isPaid: {
         type: Boolean,
         default: false
     },
-    isPaid2:{
+    isPaid2: {
         type: Boolean,
         default: false
     },
-    accommodationBooking:{
+    accommodationBooking: {
         type: Boolean,
         default: false
     },
-    accommodationBookingId:{
+    accommodationBookingId: {
         type: Schema.Types.ObjectId,
         ref: 'Booking'
     }

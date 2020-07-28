@@ -69,6 +69,6 @@ function decrypt(hashed_string, cid, sck) {
 }
 
 module.exports = {
-    encrypt: encrypt,
-    decrypt: decrypt,
+	encrypt: encrypt,
+	decrypt: decrypt,
 };

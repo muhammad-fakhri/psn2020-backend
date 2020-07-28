@@ -6,30 +6,30 @@ let studentSchema = new Schema({
         type: String,
         required: true
     },
-    email:{
+    email: {
         type: String,
         required: true,
         unique: true
     },
-    phone:{
+    phone: {
         type: String,
         required: true
     },
-    school:{
+    school: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'School'
     },
-    team:{
+    team: {
         type: Schema.Types.ObjectId,
         ref: 'Team',
         default: null
     },
-    accommodationBooking:{
+    accommodationBooking: {
         type: Boolean,
         default: false
     },
-    accommodationBookingId:{
+    accommodationBookingId: {
         type: Schema.Types.ObjectId,
         ref: 'Booking',
         default: null

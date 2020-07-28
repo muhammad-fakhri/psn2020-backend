@@ -1,7 +1,7 @@
 let express = require('express'),
     router = express.Router(),
     ParamController = require('./ParamController'),
-    {validateBody, schemas} = require('./ParamValidation'),
+    { validateBody, schemas } = require('./ParamValidation'),
     JWTController = require('../JWT/JWTController');
 
 router.post('/', JWTController.checkToken, validateBody(schemas.create), ParamController.create);

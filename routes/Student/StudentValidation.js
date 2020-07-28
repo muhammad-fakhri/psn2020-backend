@@ -4,7 +4,7 @@ module.exports = {
     validateBody: (schema) => {
         return (req, res, next) => {
             const result = joi.validate(req.body, schema);
-            if (result.error){
+            if (result.error) {
                 return res.status(400).json(result.error);
             }
             if (!req.value) {
@@ -14,7 +14,7 @@ module.exports = {
             next();
         }
     },
-    schemas:{
+    schemas: {
         create: joi.object().keys({
             name: joi.string().required(),
             email: joi.string().email().required(),

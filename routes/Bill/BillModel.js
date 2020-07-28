@@ -2,71 +2,71 @@ let mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 let billSchema = new Schema({
-    _id:{
+    _id: {
         type: Schema.Types.ObjectId,
         required: true
     },
     type: {
         type: String,
         required: true,
-        enum:['registration', 'accommodation']
+        enum: ['registration', 'accommodation']
     },
-    totalPrice:{
+    totalPrice: {
         type: Number,
         required: true,
     },
-    VANumber:{ //Bisa dapet atau return dari API BNI eCollection
+    VANumber: { //Bisa dapet atau return dari API BNI eCollection
         type: String,
         // required: true
     },
-    createdAt:{ 
+    createdAt: {
         type: Date,
         required: true,
         default: Date.now
     },
-    payment:{
-        status:{
+    payment: {
+        status: {
             type: String,
             required: true,
-            enum:['waiting', 'paid']
+            enum: ['waiting', 'paid']
         },
-        date:{
+        date: {
             type: Date,
         }
     },
-    school:{ //harus populate
+    school: { //harus populate
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'School'
     },
-    registration:{
-        teams:[{
+    registration: {
+        teams: [{
             type: Schema.Types.ObjectId,
             ref: 'Team'
         }],
-        numberOfStudent:{
+        numberOfStudent: {
             type: Number,
             // required: true
         },
-        teachers:[{
+        teachers: [{
             type: Schema.Types.ObjectId,
             ref: 'Teacher'
         }],
-        numberOfTeacher:{
+        numberOfTeacher: {
             type: Number,
             // required: true
         }
     },
-    accommodation:{
-        teachers:[{
+    accommodation: {
+        teachers: [{
             type: Schema.Types.ObjectId,
             ref: 'Teacher'
         }],
-        students:[{
+        students: [{
             type: Schema.Types.ObjectId,
             ref: 'Student'
         }],
-        bookings:[{
+        bookings: [{
             type: Schema.Types.ObjectId,
             ref: 'Booking'
         }],

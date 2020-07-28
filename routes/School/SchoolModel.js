@@ -31,7 +31,7 @@ let schoolSchema = new Schema({
     }
 });
 
-schoolSchema.index({name:'text'});
+schoolSchema.index({ name: 'text' });
 
 schoolSchema.pre('save', async function (next) {
     if (this.password) {
@@ -52,7 +52,7 @@ schoolSchema.pre('save', async function (next) {
 
 schoolSchema.methods.isValidPassword = async function (newPassword) {
     try {
-        console.log(newPassword,this.password);
+        console.log(newPassword, this.password);
         return await bcrypt.compare(newPassword, this.password);
     } catch (error) {
         throw new Error(error);

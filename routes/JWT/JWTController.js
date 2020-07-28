@@ -45,22 +45,22 @@ class JWtController {
             });
         }
     }
-    static isAdmin(req,res,next){
-        let {privilege} = req.decoded;
-        if(privilege == "admin"){
+    static isAdmin(req, res, next) {
+        let { privilege } = req.decoded;
+        if (privilege == "admin") {
             next();
         }
-        else{
-            return res.status(401).json({message:"You dont have permission"});
+        else {
+            return res.status(401).json({ message: "You dont have permission" });
         }
     }
-    static isSchool(req,res,next){
-        let {privilege} = req.decoded;
-        if(privilege == "school"){
+    static isSchool(req, res, next) {
+        let { privilege } = req.decoded;
+        if (privilege == "school") {
             next();
         }
-        else{
-            return res.status(401).json({message:"You dont have permission"});
+        else {
+            return res.status(401).json({ message: "You dont have permission" });
         }
     }
 }

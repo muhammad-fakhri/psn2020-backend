@@ -1,7 +1,7 @@
 let express = require('express'),
     router = express.Router(),
     TeamController = require('./TeamController'),
-    {validateBody, schemas} = require('./TeamValidation'),
+    { validateBody, schemas } = require('./TeamValidation'),
     JWtController = require('../JWT/JWTController');
 
 router.post('/', JWtController.checkToken, validateBody(schemas.create), TeamController.create);
