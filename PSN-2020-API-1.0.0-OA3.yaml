@@ -939,7 +939,7 @@ paths:
   /schools/search:
     get:
       summary: Search school
-      description: Only usable by admin
+      description: Search school by search query. Only usable by admin
       security:
       - bearerAuth: [] 
       parameters:
@@ -1579,7 +1579,7 @@ paths:
       summary: List team
       description: |
         Get list team  
-        Choose one between school parameter or contest parameter, they cannot be used together. If no parameters are used, it will return the entire list of teams in the database
+        Choose one between school parameter or contest parameter, they cannot be used together. If no parameters are used, it will return the entire list of teams in the database (admin only)
       security:
       - bearerAuth: []
       tags:
@@ -1589,38 +1589,48 @@ paths:
         name: school
         schema:
           type: string
-        description: ID of the school. Return the team list by school
+        description: ID of the school. Return the team list by school. If user is school's admin then only team data in same school can be retrieved
       - in: query
         name: contest
         schema:
           type: string
-        description: ID of the contest. Return the team list by contest
+        description: ID of the contest. Return the team list by contest. Only can be used by admin.
       - in: query
         name: populateContest
         schema:
-          type: integer
+          type: boolean
+          default: false
         description: Populate contest data
       - in: query
         name: populateStudent
         schema:
-          type: integer
+          type: boolean
+          default: false
         description: Populate student data
+      - in: query
+        name: populateTeacher
+        schema:
+          type: boolean
+          default: false
+        description: Populate teacher data
       responses:
         '200':
-          description: Team created
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   teams:
                     type: array
                     items:
                       $ref: '#/components/schemas/TeamFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: School or contest set as parameter was not found. 
+          description: Data for School ID or contest ID used as parameter was not found. 
           content:
             application/json:
               schema:
@@ -1639,24 +1649,27 @@ paths:
             schema:
               $ref: '#/components/schemas/Team'
       responses:
-        '200':
+        '201':
           description: Team created
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   team:
-                    $ref: '#/components/schemas/TeamFull'
+                    $ref: '#/components/schemas/TeamWithId'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     put:
-      summary: Edit team
-      description: Edit team. Only school admin in the same school with the team can use this endpoint.
+      summary: Update team
+      description: | 
+        Update team. If user: 
+        * admin, can update team in any school
+        * school's admin, only can update team in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1666,41 +1679,29 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                _id:
-                  type: string
-                  description: Team ID
-                name:
-                  type: string
-                students:
-                  type: array
-                  description: Array of student ID
-                  items:
-                    type: string
+              $ref: '#/components/schemas/TeamWithId'
       responses:
         '200':
-          description: Team edited
+          description: Team updated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
+                  team:
+                    $ref: '#/components/schemas/TeamFull'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Team with the given ID was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
+          $ref: '#/components/responses/TeamNotFound'
   /teams/{teamId}:
     get:
       summary: Get team detail
+      description: If user is school's admin then they only can get detail of team in the same school
       parameters:
         - in: path 
           name: teamId
@@ -1720,6 +1721,12 @@ paths:
             type: boolean
             default: false
           description: Set to true to populate the student
+        - in: query
+          name: populateTeacher
+          schema:
+            type: boolean
+            default: false
+          description: Set to true to populate the teacher
       tags:
       - Team
       security:
@@ -1732,21 +1739,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   team:
                     $ref: '#/components/schemas/TeamFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Team with the given ID was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message' 
+          $ref: '#/components/responses/TeamNotFound'
     delete:
       summary: Delete team
-      description: Delete team
+      description: Delete team. If user is school's admin then they only can delete team in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1768,18 +1771,15 @@ paths:
                 properties:
                   message:
                     type: string
-                  success:
-                    type: boolean
+                    example: Team deleted
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Team with the given ID was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'                
+          $ref: '#/components/responses/TeamNotFound'
   /teams/unpaid/school/{schoolId}:
     get:
       summary: List of unpaid team
@@ -2184,26 +2184,53 @@ components:
       properties:
         name:
           type: string
+          example: Tim Menang
         contest:
           type: string
           description: Contest ID
+          example: JJJJJJJJJJJ
         students:
           type: array
           description: Array of student ID
           items:
             type: string
-    TeamFull:
+        teacher:
+          type: string
+          description: Teacher ID
+          example: KKKKKKKKKK
+      required:
+        - name
+        - contest
+        - students
+    TeamWithId:
       allOf:
         - type: object
           properties:
             _id:
               type: string
+              example: OOOOOOOOOOOOOO
+          required:
+            - _id
+        - $ref: '#/components/schemas/Team'
+    TeamFull:
+      allOf:
+        - $ref: '#/components/schemas/TeamWithId'
+        - type: object
+          properties:
+            isFinal:
+              type: boolean
+              example: false
             isPaid:
               type: boolean
+              example: true
             school:
               type: string
               description: School ID
-        - $ref: '#/components/schemas/Team'
+          required:
+            - isFinal
+            - isPaid
+            - school
+        
   responses:
     BadRequest:
       description: |   
@@ -2317,6 +2344,15 @@ components:
               - $ref: '#/components/schemas/Message'
               - example:
                   message: Teacher data not found
+    TeamNotFound:
+      description: Team with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example: 
+                  message: Team not found
   securitySchemes:
     bearerAuth:            
       type: http
