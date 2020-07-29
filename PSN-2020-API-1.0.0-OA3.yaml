@@ -455,6 +455,8 @@ paths:
                   - message
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Forbidden, not a school admin
           content:
@@ -467,7 +469,6 @@ paths:
                     example: Change password fail, not a school admin  
                 required:
                   - message
-          
   /auth/login/admin:
     post:
       summary: Admin Login
@@ -559,6 +560,18 @@ paths:
                     $ref: '#/components/schemas/AdminWithId'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Admin Register fail, not a super admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin Register fail, you are not a super admin
+                required:
+                  - message
         '409':
           description: Admin Register fail, email already exist
           content:
@@ -2096,6 +2109,13 @@ components:
         application/json::
           schema:
             $ref: '#/components/schemas/Message'
+          examples:
+            Required data not provided:
+              value:
+                message: Some required data not provided.
+            Doesn't meet required conditions:
+              value:
+                message: Some required data does not meet the conditions
     Unexpected:
       description: Unexpected error
       content:
@@ -2122,13 +2142,14 @@ components:
     Unauthorized:
       description: |
         Unauthorized    
-        Might be caused by one of the following reasons
-        * You do not have access to this source
-        * Auth token is not supplied or invalid
+        Auth token is not supplied or invalid
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Message'
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Auth token is not supplied or invalid
     NotFound:
       description: Requested resource was not found
       content:
