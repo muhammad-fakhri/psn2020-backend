@@ -183,9 +183,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Login success
                   school:
                     $ref: '#/components/schemas/SchoolWithId'
                   token:
@@ -236,9 +233,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Register success
                   school:
                     $ref: '#/components/schemas/SchoolWithId'
                 required:
@@ -808,9 +802,64 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/ContestNotFound'
+  /school/detail:
+    get:
+      summary: Get school detail 
+      description: Get detail of user's school. Only usable by school's admin
+      security:
+        - bearerAuth: []
+      tags:
+        - School
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                required:
+                  - school
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      summary: Update school detail 
+      description: Update detail of user's school. Only usable by school's admin
+      security:
+        - bearerAuth: []
+      tags:
+        - School
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School'
+      responses:
+        '200':
+          description: Data updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                required:
+                  - school
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /schools:
     get:
       summary: List all schools
+      description: List all school in database, only usable by admin
       tags:
       - School
       security:
@@ -823,20 +872,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: 
-                    type: string
                   schools:
                     type: array
                     items:
-                      $ref: '#/components/schemas/School'
+                      $ref: '#/components/schemas/SchoolWithId'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Unexpected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /schools/detail/{schoolId}:
     get:
-      summary: Get school detail
-      description: Get school detail by school ID
+      summary: Get school detail by Id
+      description: Get school detail by school ID, only usable by admin
       security:
         - bearerAuth: []
       tags:
@@ -856,21 +903,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   school:
-                    $ref: '#/components/schemas/School'
+                    $ref: '#/components/schemas/SchoolWithId'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        default: 
-          $ref: '#/components/responses/Unexpected'
   /schools/search:
     get:
       summary: Search school
+      description: Only usable by admin
       security:
       - bearerAuth: [] 
       parameters:
@@ -905,13 +951,13 @@ paths:
                   schools:
                     type: array
                     items:
-                      $ref: '#/components/schemas/School'
+                      $ref: '#/components/schemas/SchoolWithId'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        default:
-          $ref: '#/components/responses/Unexpected'
   /students:
     post:
       summary: Create student
@@ -934,21 +980,19 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   student:
                     $ref: '#/components/schemas/StudentFull'
                 required:
-                - message
+                  - student
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Unexpected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     put:
-      summary: Edit student
-      description: Edit student data. Only school admin can use this endpoint.
+      summary: Update student
+      description: Update student data. Only school admin in the same school as student whose data will be updated can use this endpoint.
       security:
       - bearerAuth: []
       tags:
@@ -961,27 +1005,22 @@ paths:
               $ref: '#/components/schemas/StudentWithId'
       responses:
         '200':
-          description: | 
-            OK  
-            Possible value of "success"   
-            * "true", means the data was successfully changed
-            * "false", means the data failed to change
+          description: Student data updated  
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
+                  student:
+                    $ref: '#/components/schemas/StudentFull'
                 required:
-                - message
-                - success
+                - student
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           description: Student data with the given ID was not found
           content:
@@ -991,8 +1030,6 @@ paths:
                   - $ref: '#/components/schemas/Message'
                   - example:
                       message: Student data not found
-        default:
-          $ref: '#/components/responses/Unexpected'
   /students/{studentId}:
     delete:
       summary: Delete student
@@ -1014,19 +1051,16 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                required:
-                - message
-                - success
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                  - example:
+                      message: Student data deleted
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           description: Student data with the given ID was not found
           content:
@@ -1036,8 +1070,6 @@ paths:
                   - $ref: '#/components/schemas/Message'
                   - example:
                       message: Student data not found
-        default:
-          $ref: '#/components/responses/Unexpected'
   /students/school/{schoolId}:
     get:
       summary: List student
@@ -1055,7 +1087,7 @@ paths:
         description: |
           Can be filled with  
           * school ID, to display all student data in a school
-          * "all", to display all student data in the database. Only can be used by admin
+          * "all", to display all student data in the database. (Only can be used by admin)
       responses:
         '200':
           description: OK
@@ -1064,8 +1096,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   students:
                     type: array
                     items:
@@ -1076,8 +1106,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Unexpected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /students/count/{schoolId}:
     get:
       summary: Count student
@@ -1092,7 +1122,10 @@ paths:
           schema:
             type: string
           required: true
-          description: ID of the school
+          description: |  
+            Can be filled with  
+            * school ID, to get number of student in a school
+            * "all", to get number of student data in the database. (Only can be used by admin)
       responses:
         '200':
           description: OK
@@ -1103,8 +1136,13 @@ paths:
                 properties:
                   totalStudent:
                     type: integer
+                    example: 15
                 required:
                   - totalStudent
+              examples:
+                School:
+                  value:
+                    - totalStudent: 15
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2008,37 +2046,46 @@ components:
       properties:
         name:
           type: string
+          example: Siswa A
         email:
           type: string
+          format: email
+          example: siswaA@gmail.com
         phone:
           type: string
+          example: 081283639734
+        gender:
+          type: string
+          example: male
+          enum: 
+            - male
+            - female
       required:
         - name
         - email
         - phone
+        - gender
     StudentWithId:
       allOf:
         - type: object
           properties:
             _id:
               type: string
+              example: xxxxxxxxxxxxx
+          required:
+            - _id
         - $ref: '#/components/schemas/Student'
     StudentFull:
       allOf:
         - $ref: '#/components/schemas/StudentWithId'
         - type: object
           properties:
-            team:
-              type: string
             school:
               type: string
               description: This student's school ID
-            accommodationBooking:
-              type: boolean
-              default: false
-            accommodationBookingId:
-              type: string
-              description: Booking ID
+              example: vvvvvvvvvvvvvvvvv
+          required: 
+            - school
     Teacher:
       type: object
       properties:
@@ -2150,6 +2197,17 @@ components:
               - $ref: '#/components/schemas/Message'
               - example:
                   message: Auth token is not supplied or invalid
+    Forbidden:
+      description: |
+        Forbidden    
+        User doesn't have access to this resource
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: You don't have access for this resource
     NotFound:
       description: Requested resource was not found
       content:
