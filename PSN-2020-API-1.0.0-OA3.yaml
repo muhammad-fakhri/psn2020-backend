@@ -880,6 +880,29 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /schools/count:
+    get:
+      summary: Count school
+      description: Get number of school that are already registered. Only admin can use this resource.
+      tags:
+      - School
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSchool:
+                    type: integer
+                    example: 20
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /schools/detail/{schoolId}:
     get:
       summary: Get school detail by Id
@@ -912,7 +935,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/SchoolNotFound'
   /schools/search:
     get:
       summary: Search school
@@ -992,7 +1015,11 @@ paths:
           $ref: '#/components/responses/Forbidden'
     put:
       summary: Update student
-      description: Update student data. Only school admin in the same school as student whose data will be updated can use this endpoint.
+      description: |
+        Update student data.  
+        If user:
+        * Admin, can update student data in any school
+        * School's admin, Only can update student in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1022,18 +1049,15 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Student data with the given ID was not found
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - example:
-                      message: Student data not found
+          $ref: '#/components/responses/StudentNotFound'
   /students/{studentId}:
     delete:
       summary: Delete student
-      description: Delete student data. Only school admin in the same school as student whose data will be deleted can use this endpoint. 
+      description: |
+        Delete student data. Student data that are already final or paid can't be deleted    
+        If user:
+        * Admin, can delete student data in any school
+        * School's admin, Only can delete student data in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1062,14 +1086,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Student data with the given ID was not found
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - example:
-                      message: Student data not found
+          $ref: '#/components/responses/StudentNotFound'
   /students/school/{schoolId}:
     get:
       summary: List student
@@ -1099,15 +1116,22 @@ paths:
                   students:
                     type: array
                     items:
-                      $ref: '#/components/schemas/StudentFull'
+                      allOf:
+                        - $ref: '#/components/schemas/StudentFull'
+                        - type: object
+                          properties:
+                            isPaid:
+                              type: boolean
                 required:
-                - message
+                  - students
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
   /students/count/{schoolId}:
     get:
       summary: Count student
@@ -1136,23 +1160,28 @@ paths:
                 properties:
                   totalStudent:
                     type: integer
-                    example: 15
                 required:
                   - totalStudent
               examples:
-                School:
+                In a school:
                   value:
-                    - totalStudent: 15
+                    totalStudent: 15
+                All data:
+                  value:
+                    totalStudent: 50
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
   /students/available/{schoolId}:
     get:
       summary: Available student
-      description: Get students who have not been added to any team
+      description: |
+        Get students who have not been added to any team in a school. Only school's admin in the same school can use this endpoint 
       security:
         - bearerAuth: []
       tags:
@@ -1182,12 +1211,15 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'
-  /students/unbooked-accommodation/school/{schoolId}:
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
+  /students/unbooked/{schoolId}:
     get:
       summary: Unbooked student
-      description: Get students who haven't booked accommodation
+      description: |
+        Get students who haven't booked accommodation. Only school's admin in the same school can use this endpoint  
       security:
         - bearerAuth: []
       tags:
@@ -1217,8 +1249,10 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'        
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
   /teachers:
     get:
       summary: List all teacher
@@ -1235,14 +1269,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   teachers:
                     type: array
                     items:
                       $ref: '#/components/schemas/TeacherFull'
+                required:
+                  - teachers
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       summary: Create teacher
       description: Create new teacher. Only school admin can use this endpoint.
@@ -1264,22 +1300,23 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   teacher:
                     $ref: '#/components/schemas/TeacherFull'
                 required:
-                - message
                 - teacher
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Unexpected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     put:
-      summary: Edit teacher
-      description: Edit teacher data. Only school admin can use this endpoint.
+      summary: Update teacher
+      description: | 
+        Update teacher data.  
+        If user:
+        * Admin, can update teacher data in any school
+        * School's admin, Only can update teacher in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1292,42 +1329,32 @@ paths:
               $ref: '#/components/schemas/TeacherWithId'
       responses:
         '200':
-          description: | 
-            OK  
-            Possible value of "success"   
-            * "true", means the data was successfully changed
-            * "false", means the data failed to change
+          description: Teacher updated  
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
+                  teacher:
+                    $ref: '#/components/schemas/TeacherFull'
                 required:
-                - message
-                - success
+                - teacher
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Teacher data with the given ID was not found
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - example:
-                      message: Teacher data not found
-        default:
-          $ref: '#/components/responses/Unexpected'
+          $ref: '#/components/responses/TeacherNotFound'
   /teachers/{teacherId}:
     get:
       summary: Detail teacher
-      description: Get detail of a teacher. Only school admin can use this endpoint.
+      description: | 
+        Get detail of a teacher.  
+        If user:
+        * Admin, can access teacher data in any school
+        * School's admin, Only can access teacher in the same school
       tags:
         - Teacher
       parameters:
@@ -1347,22 +1374,23 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   teacher:
                     $ref: '#/components/schemas/TeacherFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Teacher data with the given ID was not found
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - example:
-                      message: Teacher data not found
+          $ref: '#/components/responses/TeacherNotFound'
     delete:
       summary: Delete teacher
-      description: Delete teacher data. Only school admin in the same school as teacher whose data will be deleted can use this endpoint. 
+      description: |
+        Delete teacher data. Teacher data that are already final or paid can't be deleted.  
+        If user:
+        * Admin, can delete teacher data in any school
+        * School's admin, Only can delete teacher data in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1384,30 +1412,24 @@ paths:
                 properties:
                   message:
                     type: string
-                  success:
-                    type: boolean
+                    example: Teacher data deleted
                 required:
-                - message
-                - success
+                  - message
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Teacher data with the given ID was not found
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - example:
-                      message: Teacher data not found
-        default:
-          $ref: '#/components/responses/Unexpected'
+          $ref: '#/components/responses/TeacherNotFound'
   /teachers/school/{schoolId}:
     get:
       summary: List teacher by school
-      description: Display all teacher data in a school
+      description: |
+        Display all teacher data in a school. If user:
+        * Admin, can get teacher data in any school
+        * School's admin, Only can get teacher data in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1427,25 +1449,24 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   teachers:
                     type: array
                     items:
                       $ref: '#/components/schemas/TeacherFull'
                 required:
-                - message
                 - teachers
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Unexpected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
   /teachers/count/{schoolId}:
     get:
       summary: Count teacher
-      description: Get the number of teachers in a school
+      description: Get the number of teachers in a school. Only school's admin in the same school can use this endpoint
       security:
         - bearerAuth: []
       tags:
@@ -1467,18 +1488,22 @@ paths:
                 properties:
                   totalTeacher:
                     type: integer
+                    example: 3
                 required:
-                  - totalStudent
+                  - totalTeacher
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'
-  /teachers/unpaid/school/{schoolId}:
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
+  /teachers/available/{schoolId}:
     get:
-      summary: Unpaid teacher
-      description: Get teachers who have not paid the registration fee
+      summary: Available teacher
+      description: |
+        Get teachers who have not been added to any team in a school. Only school's admin in the same school can use this endpoint
       security:
         - bearerAuth: []
       tags:
@@ -1508,12 +1533,14 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'
-  /teachers/unbooked-accommodation/school/{schoolId}:
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
+  /teachers/unbooked/{schoolId}:
     get:
       summary: Unbooked teacher
-      description: Get teachers who haven't booked accommodation
+      description: Get teachers who haven't booked accommodation. Only school's admin in the same school can use this endpoint
       security:
         - bearerAuth: []
       tags:
@@ -1543,8 +1570,10 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        default: 
-          $ref: '#/components/responses/Unexpected'        
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
   /teams:
     get:
       summary: List team
@@ -2053,7 +2082,7 @@ components:
           example: siswaA@gmail.com
         phone:
           type: string
-          example: 081283639734
+          example: 081238123718237912
         gender:
           type: string
           example: male
@@ -2084,6 +2113,14 @@ components:
               type: string
               description: This student's school ID
               example: vvvvvvvvvvvvvvvvv
+            team:
+              type: string
+              description: This student's team ID
+              example: CCCCCCCCCCCCCCCCCC
+            booking:
+              type: string
+              description: Booking ID, if this student have ordered a accomodation
+              example: BBBBBBBBBBBBBBB
           required: 
             - school
     Teacher:
@@ -2091,36 +2128,57 @@ components:
       properties:
         name:
           type: string
+          example: Guru A
         email:
           type: string
+          example: gurua@gmail.com
         phone:
           type: string
+          example: 08123231312313
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+          example: male
         NIP:
           type: string
-        school:
-          type: string
-          description: School ID
+          example: 7182301237102
+          description: Nomor Identitas Pegawai
+      required:
+        - name
+        - email
+        - phone
+        - gender
+        - NIP
     TeacherWithId:
       allOf:
         - type: object
           properties:
             _id:
               type: string
+          required:
+            - _id
         - $ref: '#/components/schemas/Teacher'
     TeacherFull:
       allOf:
         - $ref: '#/components/schemas/TeacherWithId'
         - type: object
           properties:
-            isPaid:
-              type: boolean
-              default: false
-            accommodationBooking:
-              type: boolean
-              default: false
-            accommodationBookingId:
+            school:
               type: string
+              description: School ID
+              example: VVVVVVVVVVVVVV
+            team:
+              type: string
+              example: GGGGGGGGG
+              description: Team ID
+            booking:
+              type: string
+              example: SSSSSSSSSS
               description: Booking ID
+          required:
+            - school
     Team:
       type: object
       properties:
@@ -2232,6 +2290,33 @@ components:
                 success:
                   type: boolean
                   default: false
+    SchoolNotFound:
+      description: School with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Message'
+            - example:
+               message: School not found
+    StudentNotFound:
+      description: Student data with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Student data not found
+    TeacherNotFound:
+      description: Teacher data with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Teacher data not found
   securitySchemes:
     bearerAuth:            
       type: http
