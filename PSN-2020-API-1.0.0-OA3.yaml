@@ -1780,64 +1780,10 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TeamNotFound'
-  /teams/unpaid/school/{schoolId}:
-    get:
-      summary: List of unpaid team
-      description: Get list of unpaid team in a school
-      parameters:
-          - in: path 
-            name: schoolId
-            schema:
-              type: string
-            description: School ID
-            required: true
-          - in: query 
-            name: populateContest
-            schema:
-              type: boolean
-              default: false
-            description: Set to true to populate the contest
-          - in: query
-            name: populateStudent
-            schema:
-              type: boolean
-              default: false
-            description: Set to true to populate the student
-      security:
-        - bearerAuth: []
-      tags:
-        - Team
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  teams:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TeamFull'  
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: School with the given ID was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
-  /teams/count/{schoolId}:
+  /teams/count:
      get:
       summary: Count team
-      description: Get count of teams in a school
-      parameters:
-          - in: path 
-            name: schoolId
-            schema:
-              type: string
-            description: School ID
-            required: true
+      description: Get number of teams in database. Admin only
       security:
         - bearerAuth: []
       tags:
@@ -1852,14 +1798,13 @@ paths:
                 properties:
                   totalTeams:
                     type: integer
+                    example: 100
+                required:
+                  - totalTeams
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: School with the given ID was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /teams/excel/contest/{contestId}:
     get:
       summary: Generate excel
