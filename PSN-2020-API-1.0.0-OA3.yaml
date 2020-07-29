@@ -87,14 +87,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
                   accommodation:
                       $ref: '#/components/schemas/AccommodationFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     put:
       summary: Update accomodation
       description: Update accomodation. Only admin can use this endpoint.
@@ -114,14 +114,14 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/Message'
-                  - type: object
-                    properties:
-                      success:
-                        type: boolean
+                type: object
+                properties:
+                  accomodation:
+                    $ref: '#/components/schemas/AccommodationFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/AccomodationNotFound'
   /accomodation/{accomodationId}:
@@ -147,12 +147,14 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Message'
-                  - type: object
-                    properties:
-                      success:
-                        type: boolean
+                  - example:
+                      message: Accommodation deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/AccomodationNotFound'
   /auth/login:
@@ -585,7 +587,7 @@ paths:
         Get all the booking data  
         Data returned depends on the type of user. If the user is  
         * Admin, then all booking data will be returned
-        * School, then only the booking data belonging to the school will be returned      
+        * School, then only the booking data belonging to the same school will be returned      
       tags:
         - Booking
       security:
@@ -632,15 +634,55 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                    default: true
                   booking:
                       $ref: '#/components/schemas/BookingFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      summary: Update Booking
+      description: Update booking. Cannot update booking that is final. If user is school's admin, they only can update booking belonging to the same school
+      tags:
+        - Booking
+      security: 
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingWithId'
+      responses:
+        '200':
+          description: Booking updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  booking:
+                      $ref: '#/components/schemas/BookingFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Update fail, booking data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update booking fail, booking data with the given ID already final
+                required:
+                  - message
   /booking/{bookingId}:
     delete:
       summary: Delete Booking
@@ -662,15 +704,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'  
+                allOf:
+                  - $ref: '#/components/schemas/Message'  
+                  - example:
+                      message: Booking deleted
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Booking with the given ID was not found
+          $ref: '#/components/responses/BookingNotFound'
+        '409':
+          description: Delete fail, booking data already final
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete booking fail, booking data with the given ID already final
+                required:
+                  - message
   /booking/download:
     get:
       summary: Generate Booking Excel File
@@ -714,14 +769,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
                   contests:
                     type: array
                     items:
-                      $ref: '#/components/schemas/ContestWithId'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                      $ref: '#/components/schemas/ContestFull'
     post:
       summary: Create contest
       description: Create new contest. Only admin can use this endpoint.
@@ -743,15 +794,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  success:
-                    type: boolean
-                    default: true
                   contest:
-                      $ref: '#/components/schemas/ContestWithId'
+                      $ref: '#/components/schemas/ContestFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/BadRequest'
     put:
       summary: Update contest
       description: Update contest. Only admin can use this endpoint.
@@ -771,9 +821,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'  
+                type: object
+                properties:
+                  contest:
+                    $ref: '#/components/schemas/ContestFull'  
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/ContestNotFound'
   /contest/{contestId}:
@@ -797,9 +852,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'  
+                allOf:
+                  - $ref: '#/components/schemas/Message'  
+                  - example:
+                      message: Contest deleted
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/ContestNotFound'
   /school/detail:
@@ -1016,7 +1076,7 @@ paths:
     put:
       summary: Update student
       description: |
-        Update student data.  
+        Update student data. Cannot update student data belonging to a team that is final.
         If user:
         * Admin, can update student data in any school
         * School's admin, Only can update student in the same school
@@ -1050,6 +1110,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/StudentNotFound'
+        '409':
+          description: Update fail, student data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update student fail, student data with the given ID already final
+                required:
+                  - message
   /students/{studentId}:
     delete:
       summary: Delete student
@@ -1087,6 +1159,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/StudentNotFound'
+        '409':
+          description: Delete fail, student data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete student fail, student data with the given ID already final
+                required:
+                  - message
   /students/school/{schoolId}:
     get:
       summary: List student
@@ -1347,6 +1431,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TeacherNotFound'
+        '409':
+          description: Update fail, teacher data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update teacher fail, teacher data with the given ID already final
+                required:
+                  - message
   /teachers/{teacherId}:
     get:
       summary: Detail teacher
@@ -1423,6 +1519,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TeacherNotFound'
+        '409':
+          description: Delete fail, teacher data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete teacher fail, teacher data with the given ID already final
+                required:
+                  - message
   /teachers/school/{schoolId}:
     get:
       summary: List teacher by school
@@ -1667,7 +1775,7 @@ paths:
     put:
       summary: Update team
       description: | 
-        Update team. If user: 
+        Update team. Cannot update a team that is final. If user: 
         * admin, can update team in any school
         * school's admin, only can update team in the same school
       security:
@@ -1698,6 +1806,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TeamNotFound'
+        '409':
+          description: Update fail, team data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update team fail, team data with the given ID already final
+                required:
+                  - message
   /teams/{teamId}:
     get:
       summary: Get team detail
@@ -1749,7 +1869,7 @@ paths:
           $ref: '#/components/responses/TeamNotFound'
     delete:
       summary: Delete team
-      description: Delete team. If user is school's admin then they only can delete team in the same school
+      description: Delete team. Cannot delete team that is final. If user is school's admin then they only can delete team in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1780,6 +1900,18 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TeamNotFound'
+        '409':
+          description: Delete fail, team data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete team fail, team data with the given ID already final
+                required:
+                  - message
   /teams/count:
      get:
       summary: Count team
@@ -1841,22 +1973,43 @@ components:
       properties:
         name:
           type: string
+          example: Paket A
         quota:
           type: integer
+          example: 100
         pricePerNight:
           type: integer
+          example: 200000
         startDate:
           type: string
           format: date-time
         endDate:
           type: string
           format: date-time
+        services:
+          type: array
+          items:
+            type: string
+          example:
+            - Kasur
+            - Kamar
+            - Bantal
+      required:
+        - name
+        - quota
+        - pricePerNight
+        - startDate
+        - endDate
+        - services
     AccommodationWithId:
       allOf:
       - type: object
         properties:
           _id:
             type: string
+            example: TTTTTTTTTTTT
+        required:
+          - _id
       - $ref: '#/components/schemas/Accommodation'
     AccommodationFull:
       allOf:
@@ -1865,6 +2018,10 @@ components:
           properties:
             reservedQuota:
               type: integer
+              example: 15
+              description: Num of quota that are already sold
+          required:
+            - reservedQuota
     Admin:
       type: object
       properties:
@@ -1904,21 +2061,32 @@ components:
         user:
           type: object
           properties:
-            type:
-              type: string
-              description: User type, "student" or "teacher"
             id:
               type: string
               description: ID of the student or teacher who is the booking owner
+              example: DA4DAD43DAS
+            type:
+              type: string
+              description: User type, "student" or "teacher"
+              enum:
+                - student
+                - teacher
+              example: student
         accommodation:
           type: string
           description: Accommodation ID
-        startDate:  
+          example: DAKJDA7DASDNA
+        checkInDate:  
           type: string
           format: date-time
-        duration: 
-          type: integer
-          description: Booking duration
+        checkOutDate:  
+          type: string
+          format: date-time
+      required:
+        - user
+        - accommodation
+        - checkInDate
+        - checkOutDate
     BookingWithId:
       allOf:
         - type: object
@@ -1926,6 +2094,9 @@ components:
             _id:
               type: string
               description: Booking ID
+              example: DALKDNADASD2231
+          required:
+            - _id
         - $ref: '#/components/schemas/Booking'
     BookingFull:
       allOf:
@@ -1933,33 +2104,70 @@ components:
         - type: object
           properties:
             isFinal:
-              type: string              
+              type: string  
+              default: false
+              example: true
             isPaid:
               type: string
+              default: false
+              example: true
+            duration: 
+              type: integer
+              description: Booking duration in days
+              example: 2
+          required:
+            - isFinal
+            - isPaid
+            - duration
     Contest:
       type: object
       properties:
         name:
           type: string
+          example: CPSC
         memberPerTeam:  
           type: integer
+          example: 3
         maxTeam: 
           type: integer
+          example: 50
         img: 
           type: string
+          example: https://wikipedia.com/img.jpg
         registrationStatus: 
           type: string
+          enum:
+           - open
+           - close
+          default: close
         pricePerStudent: 
           type: integer
-        registeredTeam: 
-          type: integer
+          example: 100000
+      required:
+        - name
+        - memberPerTeam
+        - maxTeam
+        - registrationStatus
+        - pricePerStudent
     ContestWithId:
       allOf:
         - type: object
           properties:
             _id: 
               type: string
+          required:
+            - _id
         - $ref: '#/components/schemas/Contest'
+    ContestFull:
+      allOf:
+        - $ref: '#/components/schemas/ContestWithId'
+        - type: object
+          properties:
+            registeredTeam: 
+              type: integer
+              example: 5
+          required:
+            - registeredTeam
     Message:
       type: object
       properties:
@@ -2249,7 +2457,10 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Message'
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Contest not found
     AccomodationNotFound:
       description: Accommodation with the given ID was not found
       content:
@@ -2257,11 +2468,8 @@ components:
           schema:
             allOf:
             - $ref: '#/components/schemas/Message'
-            - type: object
-              properties:
-                success:
-                  type: boolean
-                  default: false
+            - example: 
+                message: Accommodation not found
     SchoolNotFound:
       description: School with the given ID was not found
       content:
@@ -2298,6 +2506,15 @@ components:
               - $ref: '#/components/schemas/Message'
               - example: 
                   message: Team not found
+    BookingNotFound:
+      description: Booking with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Booking not found
   securitySchemes:
     bearerAuth:            
       type: http
