@@ -199,7 +199,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/LoginFail'
-        '403':
+        '404':
           description: Login failed, email not found
           content:
             application/json:
@@ -258,10 +258,70 @@ paths:
                     example: Register fail, email already exist
                 required:
                   - message
+  /auth/email/verify:
+    get:
+      summary: Verify Email
+      description: Verify school's admin email account
+      tags: 
+      - Auth
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+            format: email
+          required: true
+          description: User's email to be validated
+        - in: query
+          name: token
+          schema:
+            type: string
+          required: true
+          description: Verify email token
+      responses:
+        '200':
+          description: Email verified, then login user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email verified, login success
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                  token:
+                    type: string
+                    description: JWT Token
+                required:
+                  - message
+                  - school
+                  - token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Verify email failed, token is invalid or email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message     
+              examples: 
+                Token Invalid:
+                  value:
+                    message: Verify email failed, token is invalid
+                Email Not Found:
+                  value:
+                    message: Verify email failed, email not found
   /auth/password/forgot:
     post:
       summary: Request Reset Password (Forgot Password)
-      description: Reset school's admin account password in case the user forgot their password
+      description: Reqeust reset school's admin account password in case the user forgot their password
       tags: 
       - Auth
       requestBody:
@@ -301,24 +361,35 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Reset Password Request Approved, there is no account with this email
+                    example: Reset password request declined, there is no account with this email
                 required:
                   - message
-    get:
+  /auth/password/forgot/set:
+    post:
       summary: Set new password for forgot password
       description: Set new password after forgot password
       tags: 
       - Auth
-      parameters:
-        - in: query
-          name: token
-          schema:
-            type: string
-          required: true
-          description: Token generated when user request forgot password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Change password token
+                password:
+                  type: string
+                  format: password
+                  description: New password for forgot password
+              required:
+                - token
+                - password
       responses:
         '200':
-          description: Email verified, then login user
+          description: Reset password success
           content:
             application/json:
               schema:
@@ -326,20 +397,13 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Email verified, login success
-                  school:
-                    $ref: '#/components/schemas/SchoolWithId'
-                  token:
-                    type: string
-                    description: JWT Token
+                    example: Reset password success, You can now log in using new password
                 required:
                   - message
-                  - school
-                  - token
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
-          description: Verify email failed, token is invalid
+          description: Reset password failed, token is invalid or not found
           content:
             application/json:
               schema:
@@ -347,7 +411,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Verify email failed, token is invalid
+                    example: Reset password failed, token is invalid
                 required:
                   - message                
   /auth/password/change:
@@ -391,22 +455,8 @@ paths:
                   - message
         '400':
           $ref: '#/components/responses/BadRequest'
-  /auth/email/verify:
-    get:
-      summary: Verify Email
-      description: Verify school's admin email account
-      tags: 
-      - Auth
-      parameters:
-        - in: query
-          name: token
-          schema:
-            type: string
-          required: true
-          description: Token generated when user register to system and will be used for verify email
-      responses:
-        '200':
-          description: Email verified, then login user
+        '403':
+          description: Forbidden, not a school admin
           content:
             application/json:
               schema:
@@ -414,30 +464,10 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Email verified, login success
-                  school:
-                    $ref: '#/components/schemas/SchoolWithId'
-                  token:
-                    type: string
-                    description: JWT Token
+                    example: Change password fail, not a school admin  
                 required:
                   - message
-                  - school
-                  - token
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          description: Verify email failed, token is invalid
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Verify email failed, token is invalid
-                required:
-                  - message                
+          
   /auth/login/admin:
     post:
       summary: Admin Login
@@ -483,7 +513,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/LoginFail'
-        '403':
+        '404':
           description: Login failed, email not found
           content:
             application/json:
@@ -512,6 +542,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AdminWithPassword'
+      security:
+        - bearerAuth: []
       responses:
         '201':
           description: Admin Registration Success, then you can login using new admin account
@@ -2086,7 +2118,7 @@ components:
             allOf:
               - $ref: '#/components/schemas/Message'
               - example: 
-                  message: Login failed, email or password is wrong
+                  message: Login failed, password is wrong
     Unauthorized:
       description: |
         Unauthorized    
