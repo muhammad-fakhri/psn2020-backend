@@ -1,0 +1,1721 @@
+openapi: 3.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+  - description: Production Server
+    url: https://apipestasains.ipb.ac.id
+info:
+  description: |
+    ## Description
+    API for Pesta Sains Nasional 2020 Website. 
+    
+    ## Development Team
+    Developed by codepanda.id team
+    
+    ## Github repo
+    [PSN 2020 API Repo](https://github.com/muhammad-fakhri/psn2020-backend)
+    
+    ### Still in development process.
+  version: 2.0.0
+  title: Pesta Sains Nasional 2020
+  contact:
+    email: admin@codepanda.id
+    name: codepanda.id
+    url: https://codepanda.id
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Auth
+  - name: Bill
+  - name: Contest
+  - name: School
+  - name: Student
+  - name: Team
+paths:
+  /:
+    get:
+      summary: API Front Page Index
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /auth/login:
+    post:
+      summary: School Login
+      description: Login user (School's admin) to system
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login Success  
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                  token:
+                    type: string
+                    description: JWT Token
+                required:
+                  - message
+                  - school
+                  - token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/LoginFail'
+        '404':
+          description: Login failed, email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login failed, email not found
+                required:
+                  - message
+  /auth/registration:
+    post:
+      summary: School Registration
+      description: |  
+        Register school by school's admin. Then must verify email before can login   
+        Password conditions:
+        * alphanumeric
+        * min 8 character
+        * there is must be a number
+      tags: 
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolWithPassword'
+      responses:
+        '201':
+          description: Registration Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                required:
+                  - message
+                  - school
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Register fail, email already exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Register fail, email already exist
+                required:
+                  - message
+  /auth/email/verify:
+    get:
+      summary: Verify Email
+      description: Verify school's admin email account
+      tags: 
+      - Auth
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+            format: email
+          required: true
+          description: User's email to be validated
+        - in: query
+          name: token
+          schema:
+            type: string
+          required: true
+          description: Verify email token
+      responses:
+        '200':
+          description: Email verified, then login user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email verified, login success
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                  token:
+                    type: string
+                    description: JWT Token
+                required:
+                  - message
+                  - school
+                  - token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Verify email failed, token is invalid or email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message     
+              examples: 
+                Token Invalid:
+                  value:
+                    message: Verify email failed, token is invalid
+                Email Not Found:
+                  value:
+                    message: Verify email failed, email not found
+  /auth/password/forgot:
+    post:
+      summary: Request Reset Password (Forgot Password)
+      description: Reqeust reset school's admin account password in case the user forgot their password
+      tags: 
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: sman2bgr@gmail.com
+              required:
+                - email
+      responses:
+        '200':
+          description: Reset Password Request Approved, check email for further instructions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset password request approved, check your email for further instructions
+                required:
+                  - message
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Reset Password Request Declined, email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset password request declined, there is no account with this email
+                required:
+                  - message
+  /auth/password/forgot/set:
+    post:
+      summary: Set new password for forgot password
+      description: Set new password after forgot password
+      tags: 
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Change password token
+                password:
+                  type: string
+                  format: password
+                  description: New password for forgot password
+              required:
+                - token
+                - password
+      responses:
+        '200':
+          description: Reset password success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset password success, You can now log in using new password
+                required:
+                  - message
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Reset password failed, token is invalid or not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reset password failed, token is invalid
+                required:
+                  - message                
+  /auth/password/change:
+    post:
+      summary: Change Password
+      description: Change school's admin account password, only usable by school's admin
+      tags: 
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                  format: password
+                  example: passwordhehe
+                newPassword:
+                  type: string
+                  format: password
+                  example: passwordhihi
+              required:
+                - oldPassword
+                - newPassword
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Change password success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Change password success  
+                required:
+                  - message
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden, not a school admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Change password fail, not a school admin  
+                required:
+                  - message
+  /auth/login/admin:
+    post:
+      summary: Admin Login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: muhammadfakhri@gmail.com
+                password:
+                  type: string
+                  example: passwordhehe
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Admin Login Success  
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin login success
+                  admin:
+                    $ref: '#/components/schemas/AdminWithId'
+                  token:
+                    type: string
+                    description: JWT Token
+                required:
+                  - message
+                  - admin
+                  - token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/LoginFail'
+        '404':
+          description: Login failed, email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login failed, email not found
+                required:
+                  - message
+  /auth/registration/admin:
+    post:
+      summary: Admin Registration
+      description: |  
+        Register new admin, only usable by super admin  
+        Password conditions:
+        * alphanumeric
+        * min 8 character
+        * there is must be a number
+      tags: 
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminWithPassword'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Admin Registration Success, then you can login using new admin account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin Registration Success
+                  admin:
+                    $ref: '#/components/schemas/AdminWithId'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Admin Register fail, not a super admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin Register fail, you are not a super admin
+                required:
+                  - message
+        '409':
+          description: Admin Register fail, email already exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin Register fail, email already exist
+                required:
+                  - message
+  /contest:
+    get:
+      summary: Get all contests
+      description: Get all the contest data and how many teams have registered in the contest
+      tags:
+        - Contest
+      parameters:
+      - in: query
+        name: registrationStatus
+        schema: 
+          type: string
+        description: |
+          Registration status of the contest.  
+          Can be filled with
+          * "open", for contests which are still open for registration
+          * "close", for contests that have already been closed  
+          * Not filled, if this parameter is not used then the entire contest data will be retrieved
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContestFull'
+    post:
+      summary: Create contest
+      description: Create new contest. Only admin can use this endpoint.
+      tags:
+        - Contest
+      security: 
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contest'
+      responses:
+        '201':
+          description: Contest created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contest:
+                      $ref: '#/components/schemas/ContestFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/BadRequest'
+    put:
+      summary: Update contest
+      description: Update contest. Only admin can use this endpoint.
+      tags:
+        - Contest
+      security: 
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContestWithId'
+      responses:
+        '200':
+          description: Contest updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contest:
+                    $ref: '#/components/schemas/ContestFull'  
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ContestNotFound'
+  /contest/{contestId}:
+    delete:
+      summary: Delete contest
+      description: Delete contest. Only admin can use this endpoint.
+      tags:
+        - Contest
+      security: 
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: contestId
+        schema:
+          type: string
+        required: true
+        description: Contest ID that you want to delete
+      responses:
+        '200':
+          description: Contest deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'  
+                  - example:
+                      message: Contest deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ContestNotFound'
+  /school/detail:
+    get:
+      summary: Get school detail 
+      description: Get detail of user's school. Only usable by school's admin
+      security:
+        - bearerAuth: []
+      tags:
+        - School
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                required:
+                  - school
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      summary: Update school detail 
+      description: Update detail of user's school. Only usable by school's admin
+      security:
+        - bearerAuth: []
+      tags:
+        - School
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School'
+      responses:
+        '200':
+          description: Data updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+                required:
+                  - school
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /schools:
+    get:
+      summary: List all schools
+      description: List all school in database, only usable by admin
+      tags:
+      - School
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schools:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SchoolWithId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /schools/count:
+    get:
+      summary: Count school
+      description: Get number of school that are already registered. Only admin can use this resource.
+      tags:
+      - School
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSchool:
+                    type: integer
+                    example: 20
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /schools/detail/{schoolId}:
+    get:
+      summary: Get school detail by Id
+      description: Get school detail by school ID, only usable by admin
+      security:
+        - bearerAuth: []
+      tags:
+        - School
+      parameters:
+        - in: path
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: ID of the school
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school:
+                    $ref: '#/components/schemas/SchoolWithId'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
+  /schools/search:
+    get:
+      summary: Search school
+      description: Search school by search query. Only usable by admin
+      security:
+      - bearerAuth: [] 
+      parameters:
+      - in: query
+        name: searchString
+        schema:
+          type: string
+        required: true
+        description: Search string
+      - in: query
+        name: skip
+        schema:
+          type: integer
+          default: 0
+        description: Determine the starting point of the document search (skip search), used in pagination
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Limit the amount of data taken from the database
+      tags:
+      - School
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schools:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SchoolWithId'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /students:
+    post:
+      summary: Create student
+      description: Create new student. Only school admin can use this endpoint.
+      security:
+      - bearerAuth: []
+      tags:
+        - Student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        '201':
+          description: Student added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student:
+                    $ref: '#/components/schemas/StudentFull'
+                required:
+                  - student
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      summary: Update student
+      description: |
+        Update student data. Cannot update student data belonging to a team that is final.
+        If user:
+        * Admin, can update student data in any school
+        * School's admin, Only can update student in the same school
+      security:
+      - bearerAuth: []
+      tags:
+        - Student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentWithId'
+      responses:
+        '200':
+          description: Student data updated  
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student:
+                    $ref: '#/components/schemas/StudentFull'
+                required:
+                - student
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/StudentNotFound'
+        '409':
+          description: Update fail, student data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update student fail, student data with the given ID already final
+                required:
+                  - message
+  /students/{studentId}:
+    delete:
+      summary: Delete student
+      description: |
+        Delete student data. Student data that are already final or paid can't be deleted    
+        If user:
+        * Admin, can delete student data in any school
+        * School's admin, Only can delete student data in the same school
+      security:
+      - bearerAuth: []
+      tags:
+        - Student
+      parameters:
+      - in: path
+        name: studentId
+        schema:
+          type: string
+        required: true
+        description: ID of the student whose data will be deleted
+      responses:
+        '200':
+          description: Student deleted  
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                  - example:
+                      message: Student data deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/StudentNotFound'
+        '409':
+          description: Delete fail, student data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete student fail, student data with the given ID already final
+                required:
+                  - message
+  /students/school/{schoolId}:
+    get:
+      summary: List student
+      description: Display all student data in a school
+      security:
+      - bearerAuth: []
+      tags:
+        - Student
+      parameters:
+      - in: path
+        name: schoolId
+        schema:
+          type: string
+        required: true
+        description: |
+          Can be filled with  
+          * school ID, to display all student data in a school
+          * "all", to display all student data in the database. (Only can be used by admin)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/StudentFull'
+                        - type: object
+                          properties:
+                            isPaid:
+                              type: boolean
+                required:
+                  - students
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
+  /students/count/{schoolId}:
+    get:
+      summary: Count student
+      description: Get the number of students in a school
+      security:
+        - bearerAuth: []
+      tags:
+        - Student
+      parameters:
+        - in: path
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: |  
+            Can be filled with  
+            * school ID, to get number of student in a school
+            * "all", to get number of student data in the database. (Only can be used by admin)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalStudent:
+                    type: integer
+                required:
+                  - totalStudent
+              examples:
+                In a school:
+                  value:
+                    totalStudent: 15
+                All data:
+                  value:
+                    totalStudent: 50
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
+  /students/available/{schoolId}:
+    get:
+      summary: Available student
+      description: |
+        Get students who have not been added to any team in a school. Only school's admin in the same school can use this endpoint 
+      security:
+        - bearerAuth: []
+      tags:
+        - Student
+      parameters:
+        - in: path
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: ID of the school
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StudentFull'
+                required:
+                  - students
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404': 
+          $ref: '#/components/responses/SchoolNotFound'
+  /students/unbooked/{schoolId}:
+    get:
+      summary: Unbooked student
+      description: |
+        Get students who haven't booked accommodation. Only school's admin in the same school can use this endpoint  
+      security:
+        - bearerAuth: []
+      tags:
+        - Student
+      parameters:
+        - in: path
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: ID of the school
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StudentFull'
+                required:
+                  - students
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403': 
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
+  /teams:
+    get:
+      summary: List team
+      description: |
+        Get list team  
+        Choose one between school parameter or contest parameter, they cannot be used together. If no parameters are used, it will return the entire list of teams in the database (admin only)
+      security:
+      - bearerAuth: []
+      tags:
+      - Team
+      parameters:
+      - in: query
+        name: school
+        schema:
+          type: string
+        description: ID of the school. Return the team list by school. If user is school's admin then only team data in same school can be retrieved
+      - in: query
+        name: contest
+        schema:
+          type: string
+        description: ID of the contest. Return the team list by contest. Only can be used by admin.
+      - in: query
+        name: populateContest
+        schema:
+          type: boolean
+          default: false
+        description: Populate contest data
+      - in: query
+        name: populateStudent
+        schema:
+          type: boolean
+          default: false
+        description: Populate student data
+      - in: query
+        name: populateTeacher
+        schema:
+          type: boolean
+          default: false
+        description: Populate teacher data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Data for School ID or contest ID used as parameter was not found. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+    post:
+      summary: Create team
+      description: Create new team. Only school admin can use this endpoint.
+      security:
+      - bearerAuth: []
+      tags:
+      - Team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Team'
+      responses:
+        '201':
+          description: Team created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/TeamWithId'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      summary: Update team
+      description: | 
+        Update team. Cannot update a team that is final. If user: 
+        * admin, can update team in any school
+        * school's admin, only can update team in the same school
+      security:
+      - bearerAuth: []
+      tags:
+      - Team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamWithId'
+      responses:
+        '200':
+          description: Team updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/TeamFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TeamNotFound'
+        '409':
+          description: Update fail, team data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update team fail, team data with the given ID already final
+                required:
+                  - message
+  /teams/{teamId}:
+    get:
+      summary: Get team detail
+      description: If user is school's admin then they only can get detail of team in the same school
+      parameters:
+        - in: path 
+          name: teamId
+          schema:
+            type: string
+          description: Team ID
+          required: true
+        - in: query 
+          name: populateContest
+          schema:
+            type: boolean
+            default: false
+          description: Set to true to populate the contest
+        - in: query
+          name: populateStudent
+          schema:
+            type: boolean
+            default: false
+          description: Set to true to populate the student
+        - in: query
+          name: populateTeacher
+          schema:
+            type: boolean
+            default: false
+          description: Set to true to populate the teacher
+      tags:
+      - Team
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/TeamFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TeamNotFound'
+    delete:
+      summary: Delete team
+      description: Delete team. Cannot delete team that is final. If user is school's admin then they only can delete team in the same school
+      security:
+      - bearerAuth: []
+      tags:
+      - Team
+      parameters:
+      - in: path
+        name: teamId
+        schema:
+          type: string
+        required: true
+        description: ID of the team you want to delete
+      responses:
+        '200':
+          description: Team deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Team deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TeamNotFound'
+        '409':
+          description: Delete fail, team data already final
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete team fail, team data with the given ID already final
+                required:
+                  - message
+  /teams/count:
+     get:
+      summary: Count team
+      description: Get number of teams in database. Admin only
+      security:
+        - bearerAuth: []
+      tags:
+        - Team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalTeams:
+                    type: integer
+                    example: 100
+                required:
+                  - totalTeams
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /teams/excel/contest/{contestId}:
+    get:
+      summary: Generate excel
+      description: Generate excel file from contest data
+      tags:
+        - Team
+      parameters:
+        - in: path
+          name: contestId
+          schema:
+            type: string
+          description: Contest ID that you want to create the excel file for
+          required: true
+      responses:
+        '200':
+          description: OK, returns an excel file
+          content:
+            application/xlsx:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Contest with the given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+components:
+  schemas:
+    Admin:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Muhammad Fakhri
+        email:
+          type: string
+          example: muhammadfakhri@gmail.com
+      required:
+        - name
+        - email
+    AdminWithPassword:
+      allOf:
+        - $ref: '#/components/schemas/Admin'
+        - type: object
+          properties:
+            password:
+              type: string
+              format: password
+              example: passwordhehe
+          required:
+            - password
+    AdminWithId:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: xxxxxxxxxxxx
+          required:
+            - _id
+        - $ref: '#/components/schemas/Admin'
+    Contest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: CPSC
+        memberPerTeam:  
+          type: integer
+          example: 3
+        maxTeam: 
+          type: integer
+          example: 50
+        img: 
+          type: string
+          example: https://wikipedia.com/img.jpg
+        registrationStatus: 
+          type: string
+          enum:
+           - open
+           - close
+          default: close
+        pricePerStudent: 
+          type: integer
+          example: 100000
+      required:
+        - name
+        - memberPerTeam
+        - maxTeam
+        - registrationStatus
+        - pricePerStudent
+    ContestWithId:
+      allOf:
+        - type: object
+          properties:
+            _id: 
+              type: string
+          required:
+            - _id
+        - $ref: '#/components/schemas/Contest'
+    ContestFull:
+      allOf:
+        - $ref: '#/components/schemas/ContestWithId'
+        - type: object
+          properties:
+            registeredTeam: 
+              type: integer
+              example: 5
+          required:
+            - registeredTeam
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    School:
+      type: object
+      properties:
+        name:
+          type: string
+          example: SMA Negeri 2 Kota Bogor
+        email:
+          type: string
+          example: sman2bgr@gmail.com
+        address:
+          type: string
+          example: Jl. Budi Agung
+        phone:
+          type: string
+          example: 081283639734
+      required: 
+        - name
+        - address
+        - phone
+        - email
+    SchoolWithId:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: xxxxxxxxxxxxxx
+          required: 
+            - _id
+        - $ref: '#/components/schemas/School'
+        - type: object
+          properties:
+            isVerifiedEmail:
+              type: boolean
+              example: true
+          required:
+            - isVerifiedEmail
+    SchoolWithPassword:
+      allOf:
+        - $ref: '#/components/schemas/School'
+        - type: object
+          properties:
+            password:
+              type: string
+              format: password
+              example: passwordhehe
+          required:
+            - password
+    Student:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Siswa A
+        email:
+          type: string
+          format: email
+          example: siswaA@gmail.com
+        phone:
+          type: string
+          example: 081238123718237912
+        gender:
+          type: string
+          example: male
+          enum: 
+            - male
+            - female
+      required:
+        - name
+        - email
+        - phone
+        - gender
+    StudentWithId:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: xxxxxxxxxxxxx
+          required:
+            - _id
+        - $ref: '#/components/schemas/Student'
+    StudentFull:
+      allOf:
+        - $ref: '#/components/schemas/StudentWithId'
+        - type: object
+          properties:
+            school:
+              type: string
+              description: This student's school ID
+              example: vvvvvvvvvvvvvvvvv
+            team:
+              type: string
+              description: This student's team ID
+              example: CCCCCCCCCCCCCCCCCC
+            booking:
+              type: string
+              description: Booking ID, if this student have ordered a accomodation
+              example: BBBBBBBBBBBBBBB
+          required: 
+            - school
+    Team:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tim Menang
+        contest:
+          type: string
+          description: Contest ID
+          example: JJJJJJJJJJJ
+        students:
+          type: array
+          description: Array of student ID
+          items:
+            type: string
+      required:
+        - name
+        - contest
+        - students
+    TeamWithId:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: OOOOOOOOOOOOOO
+          required:
+            - _id
+        - $ref: '#/components/schemas/Team'
+    TeamFull:
+      allOf:
+        - $ref: '#/components/schemas/TeamWithId'
+        - type: object
+          properties:
+            isFinal:
+              type: boolean
+              example: false
+            isPaid:
+              type: boolean
+              example: true
+            school:
+              type: string
+              description: School ID
+          required:
+            - isFinal
+            - isPaid
+            - school
+        
+  responses:
+    BadRequest:
+      description: |   
+        Bad Request  
+        One of the required data in the request  
+        body, query or parameter might not be provided. Or the request body does not meet the conditions
+      content:
+        application/json::
+          schema:
+            $ref: '#/components/schemas/Message'
+          examples:
+            Required data not provided:
+              value:
+                message: Some required data not provided.
+            Doesn't meet required conditions:
+              value:
+                message: Some required data does not meet the conditions
+    Unexpected:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+            required:
+              - code
+              - message
+    LoginFail:
+      description: Login Fail 
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example: 
+                  message: Login failed, password is wrong
+    Unauthorized:
+      description: |
+        Unauthorized    
+        Auth token is not supplied or invalid
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Auth token is not supplied or invalid
+    Forbidden:
+      description: |
+        Forbidden    
+        User doesn't have access to this resource
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: You don't have access for this resource
+    NotFound:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    ContestNotFound:
+      description: Contest with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Contest not found
+    AccomodationNotFound:
+      description: Accommodation with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Message'
+            - example: 
+                message: Accommodation not found
+    SchoolNotFound:
+      description: School with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Message'
+            - example:
+               message: School not found
+    StudentNotFound:
+      description: Student data with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Student data not found
+    TeacherNotFound:
+      description: Teacher data with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Teacher data not found
+    TeamNotFound:
+      description: Team with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example: 
+                  message: Team not found
+    BookingNotFound:
+      description: Booking with the given ID was not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Message'
+              - example:
+                  message: Booking not found
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
