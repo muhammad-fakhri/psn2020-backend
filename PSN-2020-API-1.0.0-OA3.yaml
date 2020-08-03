@@ -18,7 +18,7 @@ info:
     [PSN 2020 API Repo](https://github.com/muhammad-fakhri/psn2020-backend)
     
     ### Still in development process.
-  version: "1.0.0-draft"
+  version: 1.0.0
   title: Pesta Sains Nasional 2020
   contact:
     email: admin@codepanda.id
@@ -1303,7 +1303,7 @@ paths:
     get:
       summary: Unbooked student
       description: |
-        Get students who haven't booked accommodation. Only school's admin in the same school can use this endpoint  
+        Get students who haven't booked accommodation. Only school's admin within same school can use this endpoint  
       security:
         - bearerAuth: []
       tags:
