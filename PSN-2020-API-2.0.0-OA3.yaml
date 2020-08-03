@@ -32,6 +32,7 @@ tags:
   - name: School
   - name: Student
   - name: Team
+  - name: Miscellaneous
 paths:
   /:
     get:
