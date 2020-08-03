@@ -29,10 +29,10 @@ tags:
   - name: Auth
   - name: Bill
   - name: Contest
+  - name: Miscellaneous
   - name: School
   - name: Student
   - name: Team
-  - name: Miscellaneous
 paths:
   /:
     get:
@@ -44,6 +44,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
+      tags:
+        - Miscellaneous
   /auth/login:
     post:
       summary: School Login
