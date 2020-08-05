@@ -7,10 +7,7 @@ var ContestRouter = require('./Contest/contestRouter');
 var TeamRouter = require('./Team/teamRouter');
 var SchoolRouter = require('./School/schoolRouter');
 var ParamRouter = require('./Params/ParamRouter');
-var TeacherRouter = require('./Teacher/TeacherRouter');
-var BillRouter = require('./Bill/BillRouter');
-var AccommodationRouter = require('./Accommodation/AccommodationRouter');
-var BookingRouter = require('./Booking/BookingRouter');
+// var BillRouter = require('./Bill/BillRouter');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -23,9 +20,6 @@ router.use('/contests', ContestRouter);
 router.use('/teams', TeamRouter);
 router.use('/schools', SchoolRouter);
 router.use('/params', ParamRouter);
-router.use('/teachers', TeacherRouter);
-router.use('/bills', BillRouter);
-router.use('/accommodation', AccommodationRouter);
-router.use('/booking', BookingRouter);
+// router.use('/bills', BillRouter);
 
 module.exports = router;
