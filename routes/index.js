@@ -9,9 +9,9 @@ var SchoolRouter = require('./School/schoolRouter');
 var ParamRouter = require('./Params/ParamRouter');
 // var BillRouter = require('./Bill/BillRouter');
 
-/* GET home page. */
+// API Front Page Index
 router.get('/', function (req, res, next) {
-  return res.json({ message: "Welcome to Pesta Sains Nasional 2020 API" });
+  return res.status(200).json({ message: "Welcome to Pesta Sains Nasional 2020 API. Check the documentation for more information" });
 });
 router.use('/users', userRouter);
 router.use('/auth', AuthRouter);
