@@ -6,29 +6,31 @@ let teamSchema = new Schema({
         type: String,
         required: true
     },
-    contest: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Contest'
+    isFinal: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
+    isPaid: {
+        type: Boolean,
+        default: false,
+        required: true
     },
     school: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'School'
     },
-    student: [{
+    students: [{
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Student'
     }],
-    isPaid: {
-        type: Boolean,
-        default: false,
-    },
-    isPaid2: {
-        type: Boolean,
-        default: false,
-    },
+    contest: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Contest'
+    }
 });
 
 // create a model

@@ -8,11 +8,18 @@ let studentSchema = new Schema({
     },
     email: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     phone: {
         type: String,
+        required: true
+    },
+    gender: {
+        type: String,
+        enum: [
+            "male",
+            "female"
+        ],
         required: true
     },
     school: {
@@ -22,17 +29,8 @@ let studentSchema = new Schema({
     },
     team: {
         type: Schema.Types.ObjectId,
-        ref: 'Team',
-        default: null
-    },
-    accommodationBooking: {
-        type: Boolean,
-        default: false
-    },
-    accommodationBookingId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Booking',
-        default: null
+        default: null,
+        ref: 'Team'
     }
 });
 

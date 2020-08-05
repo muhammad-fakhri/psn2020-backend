@@ -8,8 +8,8 @@ let indexRouter = require('./routes/index');
 
 let app = express();
 let mongoose = require('mongoose');
-let mongoServer = "mongodb://localhost:27017/psn"
-mongoose.connect(mongoServer, { useNewUrlParser: true });
+let mongoServer = "mongodb://localhost:27017/psn2020"
+mongoose.connect(mongoServer, { useNewUrlParser: true, autoIndex: false });
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
@@ -19,8 +19,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/', indexRouter);
-// app.use('/patriotpangan/api', indexRouter);
 
 module.exports = app;

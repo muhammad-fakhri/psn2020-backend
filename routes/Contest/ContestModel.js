@@ -9,24 +9,40 @@ let contestSchema = new Schema({
     },
     memberPerTeam: {
         type: Number,
+        min: 1,
+        max: 3,
+        default: 0,
         required: true
     },
     maxTeam: {
         type: Number,
+        min: 1,
+        default: 0,
         required: true
     },
-    img: {
+    imgPath: {
         type: String,
-        required: true
+        default: null
     },
     pricePerStudent: {
         type: Number,
+        min: 0,
         required: true
     },
     registrationStatus: {
         type: String,
-        enum: ['open', 'close'],
-        default: 'open'
+        default: "close",
+        enum: [
+            "open",
+            "close"
+        ],
+        required: true
+    },
+    registeredTeam: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 0
     }
 });
 

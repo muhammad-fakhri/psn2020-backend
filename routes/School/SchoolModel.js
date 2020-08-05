@@ -5,33 +5,52 @@ let mongoose = require('mongoose'),
 let schoolSchema = new Schema({
     name: {
         type: String,
+        minlength: 6,
+        maxlength: 50,
         required: true
     },
     email: {
         type: String,
-        required: true,
-        unique: true
-    },
-    username: {
-        type: String,
-        required: true,
-        unique: true
+        required: true
     },
     address: {
-        type: String,
-        required: true
+        type: String
     },
     phone: {
-        type: String,
-        required: true
+        type: String
     },
     password: {
         type: String,
         required: true
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    verifyEmailToken: {
+        type: String
+    },
+    isVerifiedEmail: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
+    changeEmailToken: {
+        type: String
+    },
+    verifyEmailDate: {
+        type: Date
+    },
+    createdAt: {
+        type: Date,
+        required: true,
+        default: Date.now()
+    },
+    updatedAt: {
+        type: Date,
+        required: true,
+        default: Date.now()
     }
 });
-
-schoolSchema.index({ name: 'text' });
 
 schoolSchema.pre('save', async function (next) {
     if (this.password) {

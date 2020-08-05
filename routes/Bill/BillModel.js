@@ -2,74 +2,42 @@ let mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 let billSchema = new Schema({
-    _id: {
-        type: Schema.Types.ObjectId,
-        required: true
-    },
-    type: {
-        type: String,
-        required: true,
-        enum: ['registration', 'accommodation']
-    },
     totalPrice: {
         type: Number,
-        required: true,
+        default: 0,
+        min: 0,
+        required: true
     },
-    VANumber: { //Bisa dapet atau return dari API BNI eCollection
+    VANumber: {
         type: String,
-        // required: true
+        required: true
     },
-    createdAt: {
-        type: Date,
-        required: true,
-        default: Date.now
-    },
-    payment: {
-        status: {
-            type: String,
-            required: true,
-            enum: ['waiting', 'paid']
-        },
-        date: {
-            type: Date,
-        }
-    },
-    school: { //harus populate
+    school: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'School'
     },
-    registration: {
-        teams: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Team'
-        }],
-        numberOfStudent: {
-            type: Number,
-            // required: true
-        },
-        teachers: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Teacher'
-        }],
-        numberOfTeacher: {
-            type: Number,
-            // required: true
-        }
+    teams: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Team',
+        required: true
+    }],
+    status: {
+        type: String,
+        enum: [
+            "pending",
+            "paid"
+        ],
+        required: true
     },
-    accommodation: {
-        teachers: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Teacher'
-        }],
-        students: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Student'
-        }],
-        bookings: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Booking'
-        }],
+    createdDate: {
+        type: Date,
+        required: true,
+        default: Date.now()
+    },
+    paidDate: {
+        type: Date,
+        required: true
     }
 });
 
