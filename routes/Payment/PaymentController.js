@@ -1,4 +1,4 @@
-let BillModel = require('./BillModel');
+let PaymentModel = require('./PaymentModel');
 // let TeamController = require('../Team/TeamController');
 let TeamModel = require('../Team/TeamModel');
 // let TeacherController = require('../Teacher/TeacherController');
@@ -12,7 +12,7 @@ let mongoose = require('mongoose');
 // let cid = '00298', sck = '787b175aeb54a1e133fb71b5d2ebe11d'; // credential dev
 let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
 let ParamModel = require('../Params/ParamModel');
-class BillController {
+class PaymentController {
     constructor(params) {
 
     }
@@ -135,7 +135,7 @@ class BillController {
 
             // console.log(data);
             if (type == 'registration') {
-                bill = await BillModel.create({
+                bill = await PaymentModel.create({
                     _id: trx_id, type, totalPrice, VANumber: virtual_account,
                     payment: { status: 'waiting' }, school, registration:
                     {
@@ -144,7 +144,7 @@ class BillController {
                 });
             }
             else if (type == 'accommodation') {
-                bill = await BillModel.create({
+                bill = await PaymentModel.create({
                     _id: trx_id, type, totalPrice, VANumber: virtual_account,
                     payment: { status: 'waiting' }, school, accommodation:
                     {
@@ -165,7 +165,7 @@ class BillController {
                 decryptedData = PaymentEncription.decrypt(data, cid, sck);
             // let bill = await BillModel.findByIdAndUpdate({_id:decryptedData.trx_id},{payment:{status:'paid',data:Date.now()}});
             console.log(data, decryptedData);
-            let bill = await BillModel.findById({ _id: decryptedData.trx_id });
+            let bill = await PaymentModel.findById({ _id: decryptedData.trx_id });
             if (bill == null || bill == undefined) {
                 throw new Error(`Bill with id ${decryptedData.trx_id} not found`);
             }
@@ -199,7 +199,7 @@ class BillController {
     static async get(req, res) {
         let { _id } = req.params;
         try {
-            let bill = await BillModel.findById({ _id });
+            let bill = await PaymentModel.findById({ _id });
             return res.json({ bill });
         } catch (e) {
             return res.json({ message: e.message });
@@ -208,7 +208,7 @@ class BillController {
     static async listBySchool(req, res) {
         let { school } = req.params;
         try {
-            let bills = await BillModel.find({ school });
+            let bills = await PaymentModel.find({ school });
             return res.json({ bills });
         } catch (e) {
             return res.json({ message: e.message });
@@ -217,7 +217,7 @@ class BillController {
     static async count(req, res) {
         try {
             let { school } = req.params,
-                totalBill = await BillModel.count({ school });
+                totalBill = await PaymentModel.count({ school });
             return res.status(200).json({ totalBill });
         } catch (e) {
             return res.status(400).json({ message: e.message, totalBill: null });
@@ -226,7 +226,7 @@ class BillController {
     static async findByVA(req, res, next) {
         try {
             let { vaNumber } = req.body;
-            let bills = await BillModel.find({ VANumber: { $regex: vaNumber, $options: 'i' } }).populate('school');
+            let bills = await PaymentModel.find({ VANumber: { $regex: vaNumber, $options: 'i' } }).populate('school');
             return res.status(200).json(bills);
         } catch (e) {
             return res.status(400).json({ message: e.message });
@@ -235,7 +235,7 @@ class BillController {
     static async forceUpdateBill(req, res) {
         try {
             let { billId } = req.body;
-            let bill = await BillModel.findById({ _id: billId });
+            let bill = await PaymentModel.findById({ _id: billId });
             if (bill) {
                 if (bill.payment.status != 'paid') {
                     bill.payment.status = 'paid';
@@ -274,4 +274,4 @@ class BillController {
     }
 }
 
-module.exports = BillController;
+module.exports = PaymentController;

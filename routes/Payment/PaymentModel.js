@@ -1,7 +1,7 @@
 let mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-let billSchema = new Schema({
+let paymentSchema = new Schema({
     totalPrice: {
         type: Number,
         default: 0,
@@ -42,7 +42,7 @@ let billSchema = new Schema({
 });
 
 // create a model
-let Bill = mongoose.model('Bill', billSchema);
+let Payment = mongoose.model('Payment', paymentSchema);
 
 // export the model
-module.exports = Bill;
+module.exports = Payment;

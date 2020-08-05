@@ -7,7 +7,7 @@ var ContestRouter = require('./Contest/contestRouter');
 var TeamRouter = require('./Team/teamRouter');
 var SchoolRouter = require('./School/schoolRouter');
 var ParamRouter = require('./Params/ParamRouter');
-// var BillRouter = require('./Bill/BillRouter');
+// var PaymentRouter = require('./Payment/PaymentRouter');
 
 // API Front Page Index
 router.get('/', function (req, res, next) {
@@ -20,6 +20,6 @@ router.use('/contests', ContestRouter);
 router.use('/teams', TeamRouter);
 router.use('/schools', SchoolRouter);
 router.use('/params', ParamRouter);
-// router.use('/bills', BillRouter);
+// router.use('/payment', PaymentRouter);
 
 module.exports = router;
