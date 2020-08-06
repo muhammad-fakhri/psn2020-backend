@@ -385,7 +385,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden, not a user
+          description: Forbidden, not a user or old password is wrong
           content:
             application/json:
               schema:
@@ -393,9 +393,15 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Change password fail, not a user  
                 required:
                   - message
+              examples:
+                Not a user:
+                  value:
+                    message: Change password fail, not a user
+                Old password wrong:
+                  value:
+                    message: Change password fail, your old password is wrong
   /auth/login/admin:
     post:
       summary: Admin Login
@@ -477,13 +483,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Admin Registration Success
                   admin:
                     $ref: '#/components/schemas/AdminWithId'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Admin Register fail, not a super admin
           content:
@@ -1364,7 +1369,6 @@ components:
       required:
         - name
         - email
-        - isSuperAdmin
     AdminWithPassword:
       allOf:
         - $ref: '#/components/schemas/Admin'
@@ -1657,7 +1661,7 @@ components:
             allOf:
               - $ref: '#/components/schemas/Message'
               - example:
-                  message: You don't have access for this resource
+                  message: You do not have access to this resource
     NotFound:
       description: Requested resource was not found
       content:
