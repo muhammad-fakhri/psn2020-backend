@@ -1,19 +1,45 @@
-let SchoolController = require('../School/SchoolController'),
-    JWTController = require('../JWT/JWTController'),
-    AdminController = require('../Admin/AdminController');
+const SchoolController = require('../School/SchoolController');
+const SchoolModel = require('../School/SchoolModel');
+const JWTController = require('../JWT/JWTController');
+const AdminController = require('../Admin/AdminController');
+const crypto = require('crypto');
+const Mail = require('../Mail');
 
 class AuthController {
     static async schoolRegistration(req, res) {
         try {
-            let { name, address, email, phone, username, password } = req.value.body,
-                school = await SchoolController.create(name, address, email, phone, username, password),
-                token = JWTController.signTokenToSchool(school);
-            return res.status(201).json({ message: "Success", school, token });
+            let { name, email, address, phone, password } = req.value.body;
+
+            // Make sure account doesn't already exist
+            SchoolModel.findOne({ email }, async function (err, school) {
+                // If user already exist
+                if (school) return res.status(409).json({ message: 'Register fail, email already exist' });
+
+                // If not exist, create account
+                let verifyEmailToken = crypto.randomBytes(16).toString('hex');
+                let schoolData = await SchoolController.create(name, email, address, phone, password, verifyEmailToken);
+
+                // Send verification email
+                await Mail.sendVerifyEmail(name, email, verifyEmailToken);
+
+                // remove unnecessary information
+                schoolData = schoolData.toObject();
+                delete schoolData.password;
+                delete schoolData.resetPasswordToken;
+                delete schoolData.verifyEmailToken;
+                delete schoolData.changeEmailToken;
+                delete schoolData.verifyEmailDate;
+                delete schoolData.createdAt;
+                delete schoolData.updatedAt;
+
+                return res.status(201).json({ school: schoolData });
+            })
         }
         catch (e) {
-            return res.status(500).json({ message: e.message, school: null, token: null });
+            return res.status(500).json({ message: e.message });
         }
     }
+
     static async schoolLogin(req, res) {
         try {
             let { username, password } = req.value.body,
@@ -25,6 +51,7 @@ class AuthController {
             return res.status(500).json({ message: e.message, school: null, token: null })
         }
     }
+
     static async adminRegistration(req, res) {
         try {
             let { name, username, email, password } = req.value.body,
@@ -35,6 +62,7 @@ class AuthController {
             return res.status(500).json({ message: e.message, admin: null, token: null });
         }
     }
+
     static async adminLogin(req, res) {
         try {
             let { username, password } = req.value.body,

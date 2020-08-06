@@ -17,11 +17,22 @@ module.exports = {
     schemas: {
         schoolRegistration: joi.object().keys({
             name: joi.string().required(),
-            address: joi.string().required(),
             email: joi.string().email().required(),
+            address: joi.string().required(),
             phone: joi.string().required(),
-            username: joi.string().required(),
-            password: joi.string().required(),
+            password: joi.string()
+                .required()
+                .alphanum()
+                .min(8)
+                .regex(new RegExp(".[0-9]"))
+                .error(errors => {
+                    errors.forEach(err => {
+                        if (err.type === "string.regex.base") {
+                            err.message = "Password must begin with a letter and contain at least one numeric digit";
+                        }
+                    })
+                    return errors;
+                })
         }),
         schoolLogin: joi.object().keys({
             username: joi.string().required(),

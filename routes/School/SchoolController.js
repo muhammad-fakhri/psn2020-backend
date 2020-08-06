@@ -1,8 +1,17 @@
-let SchoolModel = require('./SchoolModel');
+const SchoolModel = require('./SchoolModel');
+
+
 class SchoolController {
-    static async create(name, address, email, phone, username, password) {
+    static async create(name, email, address, phone, password, verifyEmailToken) {
         try {
-            return await SchoolModel.create({ name, address, email, phone, username, password });
+            return await SchoolModel.create({
+                name,
+                email,
+                address,
+                phone,
+                password,
+                verifyEmailToken
+            });
         } catch (e) {
             throw e;
         }
