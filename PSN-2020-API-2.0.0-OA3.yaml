@@ -425,9 +425,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Admin login success
                   admin:
                     $ref: '#/components/schemas/AdminWithId'
                   token:
