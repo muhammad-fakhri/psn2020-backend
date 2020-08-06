@@ -1358,9 +1358,13 @@ components:
         email:
           type: string
           example: muhammadfakhri@gmail.com
+        isSuperAdmin:
+          type: boolean
+          default: false
       required:
         - name
         - email
+        - isSuperAdmin
     AdminWithPassword:
       allOf:
         - $ref: '#/components/schemas/Admin'
