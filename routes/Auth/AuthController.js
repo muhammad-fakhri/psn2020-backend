@@ -136,6 +136,37 @@ class AuthController {
             return res.status(500).json({ message: e.message })
         }
     }
+
+    static async resendVerifyEmail(req, res) {
+        try {
+            let { email } = req.value.body;
+            if (!email) {
+                return res.status(400).json({ message: 'Some required data not provided' });
+            }
+
+            SchoolModel.findOne({ email }, async function (err, school) {
+                // make sure account exist
+                if (!school) {
+                    return res.status(404).json({ message: 'Resend email verify token failed, email not found' });
+                }
+
+                // generate new email verify token
+                let verifyEmailToken = crypto.randomBytes(16).toString('hex');
+                school.isVerifiedEmail = false;
+                school.verifyEmailToken = verifyEmailToken;
+                school.save();
+
+                // Resend verification email
+                await Mail.sendVerifyEmail(school.name, school.email, verifyEmailToken);
+
+                return res.status(200).json({
+                    message: 'Resend email verify token success, please check your email'
+                });
+            })
+        } catch (e) {
+            return res.status(500).json({ message: e.message })
+        }
+    }
 }
 
 module.exports = AuthController;

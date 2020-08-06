@@ -35,7 +35,7 @@ module.exports = {
                 })
         }),
         schoolLogin: joi.object().keys({
-            email: joi.string().required(),
+            email: joi.string().email().required(),
             password: joi.string().required()
         }),
         adminRegistration: joi.object().keys({
@@ -47,6 +47,9 @@ module.exports = {
         adminLogin: joi.object().keys({
             username: joi.string().required(),
             password: joi.string().required()
+        }),
+        resendVerifyEmail: joi.object().keys({
+            email: joi.string().email().required()
         }),
     }
 }
