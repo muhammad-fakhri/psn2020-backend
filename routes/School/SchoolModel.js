@@ -53,6 +53,15 @@ let schoolSchema = new Schema({
     }
 });
 
+schoolSchema.pre('save', async function (next) {
+    try {
+        this.updatedAt = Date.now();
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
 schoolSchema.methods.isValidPassword = async function (newPassword) {
     try {
         return await bcrypt.compare(newPassword, this.password);

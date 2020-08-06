@@ -219,6 +219,26 @@ class AuthController {
 
         return res.status(200).json({ message: 'Change password success' });
     }
+
+    static async forgotPassword(req, res) {
+        let { email } = req.value.body;
+        SchoolModel.findOne({ email }, async function (err, school) {
+            if (!school) {
+                return res.status(404)
+                    .json({ message: 'Reset password request declined, there is no account with this email' });
+            }
+
+            let resetPasswordToken = crypto.randomBytes(16).toString('hex');
+            school.resetPasswordToken = resetPasswordToken;
+            school.save();
+
+            // send reset password email
+            await Mail.sendForgotPasswordEmail(school.name, school.email, resetPasswordToken);
+
+            return res.status(200)
+                .json({ message: 'Reset password request approved, check your email for further instructions' });
+        });
+    }
 }
 
 module.exports = AuthController;

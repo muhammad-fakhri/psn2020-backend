@@ -78,5 +78,8 @@ module.exports = {
                     return errors;
                 })
         }),
+        forgotPassword: joi.object().keys({
+            email: joi.string().email().required()
+        }),
     }
 }
