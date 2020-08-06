@@ -1,3 +1,4 @@
+const AdminModel = require('../Admin/AdminModel');
 let JWT = require('jsonwebtoken');
 let JWT_SECRET = "#$iNd3xL1br0ruMpR0h!b1toRum$*"
 class JWtController {
@@ -29,39 +30,38 @@ class JWtController {
             }
             JWT.verify(token, JWT_SECRET, (err, decoded) => {
                 if (err) {
-                    return res.json({
-                        success: false,
-                        message: 'Token not valid'
-                    });
+                    return res.status(401).json({ message: 'Auth token is invalid' });
                 } else {
                     req.decoded = decoded;
-                    // console.log(decoded);
                     next();
                 }
             });
         } else {
-            return res.status(401).json({
-                message: 'Auth token is not supplied'
-            });
+            return res.status(401).json({ message: 'Auth token is not supplied' });
         }
     }
     static isAdmin(req, res, next) {
         let { privilege } = req.decoded;
-        if (privilege == "admin") {
-            next();
+        if (privilege === "admin") next();
+        else return res.status(403).json({ message: "You do not have access to this resource" });
+    }
+    static isSuperAdmin(req, res, next) {
+        let { privilege, sub } = req.decoded;
+        if (privilege === "admin") {
+            AdminModel.findById(sub, function (err, admin) {
+                if (!admin.isSuperAdmin) {
+                    return res.status(403)
+                        .json({ message: "You do not have access to this resource, not a super admin" });
+                }
+                next();
+            })
         }
-        else {
-            return res.status(401).json({ message: "You dont have permission" });
-        }
+        else return res.status(403).json({ message: "You do not have access to this resource" });
     }
     static isSchool(req, res, next) {
         let { privilege } = req.decoded;
-        if (privilege == "school") {
-            next();
-        }
-        else {
-            return res.status(401).json({ message: "You dont have permission" });
-        }
+        if (privilege === "school") next();
+        else return res.status(403).json({ message: "You do not have access to this resource" });
     }
 }
 

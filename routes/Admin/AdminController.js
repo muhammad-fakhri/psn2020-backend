@@ -4,9 +4,9 @@ class AdminController {
     constructor(params) {
 
     }
-    static async create(name, username, email, password) {
+    static async create(name, email, password) {
         try {
-            return await AdminModel.create({ name, username, email, password });
+            return await AdminModel.create({ name, email, password });
         } catch (e) {
             throw e;
         }
