@@ -1,33 +1,31 @@
 const SchoolModel = require('./SchoolModel');
-
+const bcrypt = require('bcryptjs');
 
 class SchoolController {
     static async create(name, email, address, phone, password, verifyEmailToken) {
         try {
+            // Make hashed password
+            const salt = await bcrypt.genSalt(10);
+            let passwordHash = await bcrypt.hash(password, salt);
+
             return await SchoolModel.create({
                 name,
                 email,
                 address,
                 phone,
-                password,
+                password: passwordHash,
                 verifyEmailToken
             });
         } catch (e) {
             throw e;
         }
     }
-    static async login(username, password) {
-        let school = await SchoolModel.findOne({ username });
-        if (school == null)
-            return { status: 404, school: null, message: "Username not found." }
-        let isMatch = await school.isValidPassword(password);
-        if (isMatch) {
-            return { status: 200, school, message: "Success" }
-        }
-        else {
-            return { status: 400, school: null, message: "Wrong password." }
-        }
+
+    static async login(email, password) {
+        let school = await SchoolModel.findOne({ email });
+        return await school.isValidPassword(password);
     }
+
     static async list(req, res, next) {
         try {
             let schools = await SchoolModel.find({});
@@ -37,9 +35,11 @@ class SchoolController {
             return res.status(500).json({ message: e.message, schools: null });
         }
     }
+
     static async getModel() {
         return SchoolModel;
     }
+
     static async get(req, res) {
         try {
             let { _id } = req.params,
@@ -49,6 +49,7 @@ class SchoolController {
             return res.status(400).json({ message: e.message });
         }
     }
+
     static async search(req, res) {
         try {
             let { searchString, skip, limit } = req.query;

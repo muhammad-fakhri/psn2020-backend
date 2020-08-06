@@ -42,10 +42,35 @@ class AuthController {
 
     static async schoolLogin(req, res) {
         try {
-            let { username, password } = req.value.body,
-                data = await SchoolController.login(username, password),
-                token = JWTController.signTokenToSchool(data.school);
-            return res.status(data.status).json({ message: data.message, school: data.school, token });
+            let { email, password } = req.value.body;
+            SchoolModel.findOne({ email }, async function (err, school) {
+                if (!school) {
+                    return res.status(404).json({ message: 'Login failed, email not found' });
+                }
+                if (!school.isVerifiedEmail) {
+                    return res.status(401).json({ message: 'Login failed, email is not yet verified' });
+                }
+
+                let isMatch = await SchoolController.login(email, password);
+                if (isMatch) {
+                    let token = JWTController.signTokenToSchool(school);
+
+                    // remove unnecessary information
+                    school = school.toObject();
+                    delete school.password;
+                    delete school.resetPasswordToken;
+                    delete school.verifyEmailToken;
+                    delete school.changeEmailToken;
+                    delete school.verifyEmailDate;
+                    delete school.createdAt;
+                    delete school.updatedAt;
+
+                    return res.status(200).json({ school, token });
+                } else {
+                    return res.status(401).json({ message: 'Login failed, password is wrong' });
+                }
+            });
+
         }
         catch (e) {
             return res.status(500).json({ message: e.message, school: null, token: null })

@@ -1,6 +1,6 @@
 let mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    bcrypt = require('bcryptjs');
+    Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs');
 
 let schoolSchema = new Schema({
     name: {
@@ -52,26 +52,8 @@ let schoolSchema = new Schema({
     }
 });
 
-schoolSchema.pre('save', async function (next) {
-    if (this.password) {
-        try {
-            // Generate a salt
-            const salt = await bcrypt.genSalt(10);
-            // Generate a password hash (salt + hash)
-            const passwordHash = await bcrypt.hash(this.password, salt);
-            // Re-assign hashed version over original, plain text password
-            this.password = passwordHash;
-            next();
-        } catch (error) {
-            next(error);
-        }
-    }
-    next();
-});
-
 schoolSchema.methods.isValidPassword = async function (newPassword) {
     try {
-        console.log(newPassword, this.password);
         return await bcrypt.compare(newPassword, this.password);
     } catch (error) {
         throw new Error(error);
