@@ -48,8 +48,8 @@ paths:
         - Miscellaneous
   /auth/login:
     post:
-      summary: School Login
-      description: Login user (School's admin) to system
+      summary: User Login
+      description: Login user to system
       tags:
         - Auth
       requestBody:
@@ -101,9 +101,9 @@ paths:
                   - message
   /auth/registration:
     post:
-      summary: School Registration
+      summary: User Registration
       description: |  
-        Register school by school's admin. Then must verify email before can login   
+        Register user. Then must verify email before can login   
         Password conditions:
         * alphanumeric
         * min 8 character
@@ -145,8 +145,7 @@ paths:
                   - message
   /auth/email/verify:
     get:
-      summary: Verify Email
-      description: Verify school's admin email account
+      summary: Verify User Email
       tags: 
       - Auth
       parameters:
@@ -176,13 +175,9 @@ paths:
                     example: Email verified, login success
                   school:
                     $ref: '#/components/schemas/SchoolWithId'
-                  token:
-                    type: string
-                    description: JWT Token
                 required:
                   - message
                   - school
-                  - token
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -203,10 +198,54 @@ paths:
                 Email Not Found:
                   value:
                     message: Verify email failed, email not found
+  /auth/email/verify/resend:
+    post:
+      summary: Resend User Email Verify Token
+      description: Resend token for verify user email account
+      tags: 
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: sman2bgr@gmail.com
+              required:
+                - email
+      responses:
+        '200':
+          description: Token resended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resend email verify token success, please check your email
+                required:
+                  - message
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Resend email verify token fail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resend email verify token failed, email not found
+                required:
+                  - message     
   /auth/password/forgot:
     post:
       summary: Request Reset Password (Forgot Password)
-      description: Reqeust reset school's admin account password in case the user forgot their password
+      description: Request reset user account password in case the user forgot their password
       tags: 
       - Auth
       requestBody:
@@ -302,7 +341,7 @@ paths:
   /auth/password/change:
     post:
       summary: Change Password
-      description: Change school's admin account password, only usable by school's admin
+      description: Change user account password, only usable by user
       tags: 
       - Auth
       requestBody:
@@ -343,7 +382,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden, not a school admin
+          description: Forbidden, not a user
           content:
             application/json:
               schema:
@@ -351,7 +390,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Change password fail, not a school admin  
+                    example: Change password fail, not a user  
                 required:
                   - message
   /auth/login/admin:
@@ -589,8 +628,8 @@ paths:
           $ref: '#/components/responses/ContestNotFound'
   /school/detail:
     get:
-      summary: Get school detail 
-      description: Get detail of user's school. Only usable by school's admin
+      summary: Get user detail 
+      description: Get detail of user. Only usable by user
       security:
         - bearerAuth: []
       tags:
@@ -612,8 +651,8 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
     put:
-      summary: Update school detail 
-      description: Update detail of user's school. Only usable by school's admin
+      summary: Update user detail 
+      description: Update detail of user profile. Only usable by user
       security:
         - bearerAuth: []
       tags:
@@ -769,7 +808,7 @@ paths:
   /students:
     post:
       summary: Create student
-      description: Create new student. Only school admin can use this endpoint.
+      description: Create new student. Only user can use this endpoint.
       security:
       - bearerAuth: []
       tags:
@@ -802,9 +841,9 @@ paths:
       summary: Update student
       description: |
         Update student data. Cannot update student data belonging to a team that is final.
-        If user:
+        If:
         * Admin, can update student data in any school
-        * School's admin, Only can update student in the same school
+        * user, Only can update student in the same school
       security:
       - bearerAuth: []
       tags:
@@ -851,10 +890,10 @@ paths:
     delete:
       summary: Delete student
       description: |
-        Delete student data. Student data that are already final or paid can't be deleted    
-        If user:
+        Delete student data. Student data that are already final or paid can't be deleted  
+        If :
         * Admin, can delete student data in any school
-        * School's admin, Only can delete student data in the same school
+        * User, Only can delete student data in the same school
       security:
       - bearerAuth: []
       tags:
@@ -990,7 +1029,7 @@ paths:
     get:
       summary: Available student
       description: |
-        Get students who have not been added to any team in a school. Only school's admin in the same school can use this endpoint 
+        Get students who have not been added to any team in a school. Only user in the same school can use this endpoint 
       security:
         - bearerAuth: []
       tags:
@@ -1024,44 +1063,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404': 
           $ref: '#/components/responses/SchoolNotFound'
-  /students/unbooked/{schoolId}:
-    get:
-      summary: Unbooked student
-      description: |
-        Get students who haven't booked accommodation. Only school's admin in the same school can use this endpoint  
-      security:
-        - bearerAuth: []
-      tags:
-        - Student
-      parameters:
-        - in: path
-          name: schoolId
-          schema:
-            type: string
-          required: true
-          description: ID of the school
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  students:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/StudentFull'
-                required:
-                  - students
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403': 
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/SchoolNotFound'
   /teams:
     get:
       summary: List team
@@ -1077,7 +1078,7 @@ paths:
         name: school
         schema:
           type: string
-        description: ID of the school. Return the team list by school. If user is school's admin then only team data in same school can be retrieved
+        description: ID of the school. Return the team list by school. If not admin then only team data in same school can be retrieved
       - in: query
         name: contest
         schema:
@@ -1125,7 +1126,7 @@ paths:
                 $ref: '#/components/schemas/Message'
     post:
       summary: Create team
-      description: Create new team. Only school admin can use this endpoint.
+      description: Create new team. Only user can use this endpoint.
       security:
       - bearerAuth: []
       tags:
@@ -1155,9 +1156,9 @@ paths:
     put:
       summary: Update team
       description: | 
-        Update team. Cannot update a team that is final. If user: 
+        Update team. Cannot update a team that is final. If: 
         * admin, can update team in any school
-        * school's admin, only can update team in the same school
+        * user, only can update team in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1201,7 +1202,7 @@ paths:
   /teams/{teamId}:
     get:
       summary: Get team detail
-      description: If user is school's admin then they only can get detail of team in the same school
+      description: If not admin, then they only can get detail of team in the same school
       parameters:
         - in: path 
           name: teamId
@@ -1249,7 +1250,7 @@ paths:
           $ref: '#/components/responses/TeamNotFound'
     delete:
       summary: Delete team
-      description: Delete team. Cannot delete team that is final. If user is school's admin then they only can delete team in the same school
+      description: Delete team. Cannot delete team that is final. If not admin, admin then they only can delete team in the same school
       security:
       - bearerAuth: []
       tags:
