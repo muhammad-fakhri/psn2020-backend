@@ -175,6 +175,9 @@ paths:
                     example: Email verified, login success
                   school:
                     $ref: '#/components/schemas/SchoolWithId'
+                  token:
+                    type: string
+                    description: JWT Token
                 required:
                   - message
                   - school
@@ -1625,8 +1628,13 @@ components:
           schema:
             allOf:
               - $ref: '#/components/schemas/Message'
-              - example: 
-                  message: Login failed, password is wrong
+          examples: 
+            Password is wrong:
+              value: 
+                message: Login failed, password is wrong
+            Email not yet verified:
+              value: 
+                message: Login failed, email is not yet verified
     Unauthorized:
       description: |
         Unauthorized    
