@@ -1,5 +1,6 @@
 const SchoolController = require('../School/SchoolController');
 const SchoolModel = require('../School/SchoolModel');
+const AdminModel = require('../Admin/AdminModel');
 const JWTController = require('../JWT/JWTController');
 const AdminController = require('../Admin/AdminController');
 const crypto = require('crypto');
@@ -90,13 +91,29 @@ class AuthController {
 
     static async adminLogin(req, res) {
         try {
-            let { username, password } = req.value.body,
-                data = await AdminController.login(username, password),
-                token = JWTController.signTokenToAdmin(data.admin);
-            return res.status(data.status).json({ message: data.message, admin: data.admin, token });
+            let { email, password } = req.value.body;
+
+            AdminModel.findOne({ email }, async function (err, admin) {
+                if (!admin) {
+                    return res.status(404).json({ message: 'Login failed, email not found' });
+                }
+
+                let isMatch = await AdminController.login(email, password);
+                if (isMatch) {
+                    let token = JWTController.signTokenToAdmin(admin);
+
+                    // remove unnecessary information
+                    admin = admin.toObject();
+                    delete admin.password;
+
+                    return res.status(200).json({ admin, token });
+                } else {
+                    return res.status(401).json({ message: 'Login failed, password is wrong' });
+                }
+            });
         }
         catch (e) {
-            return res.status(500).json({ message: e.message, admin: null, token: null })
+            return res.status(500).json({ message: e.message })
         }
     }
 

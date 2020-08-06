@@ -12,17 +12,9 @@ class AdminController {
         }
 
     }
-    static async login(username, password) {
-        let admin = await AdminModel.findOne({ username });
-        if (admin == null)
-            return { status: 404, admin: null, message: "Username not found." }
-        let isMatch = await admin.isValidPassword(password);
-        if (isMatch) {
-            return { status: 200, admin, message: "Success" }
-        }
-        else {
-            return { status: 400, admin: null, message: "Wrong password." }
-        }
+    static async login(email, password) {
+        let admin = await AdminModel.findOne({ email });
+        return await admin.isValidPassword(password);
     }
 }
 
