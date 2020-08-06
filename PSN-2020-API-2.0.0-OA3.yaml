@@ -107,7 +107,7 @@ paths:
         Password conditions:
         * alphanumeric
         * min 8 character
-        * there is must be a number
+        * Password must begin with a letter and contain at least one numeric digit
       tags: 
       - Auth
       requestBody:
