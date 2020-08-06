@@ -1472,7 +1472,7 @@ components:
           properties:
             isVerifiedEmail:
               type: boolean
-              example: true
+              example: false
           required:
             - isVerifiedEmail
     SchoolWithPassword:
