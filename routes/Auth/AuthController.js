@@ -74,6 +74,43 @@ class AuthController {
             return res.status(500).json({ message: e.message, admin: null, token: null })
         }
     }
+
+    static async verifyEmail(req, res) {
+        try {
+            if (!req.query.email || !req.query.token) {
+                return res.status(400).json({ message: 'Some required data not provided' });
+            }
+
+            SchoolModel.findOne({ email: req.query.email }, function (err, school) {
+                // make sure account exist
+                if (!school) {
+                    return res.status(404).json({ message: 'Verify email failed, email not found' });
+                }
+
+                if (school.verifyEmailToken === req.query.token) {
+                    school.isVerifiedEmail = true;
+                    school.verifyEmailToken = null;
+                    school.verifyEmailDate = Date.now();
+                    school.save();
+
+                    // login user
+                    let token = JWTController.signTokenToSchool(school);
+
+                    // TODO: redirect to front end "Email Verified Page"
+
+                    return res.status(200).json({
+                        message: 'Email verified, login success',
+                        school,
+                        token
+                    });
+                } else {
+                    return res.status(404).json({ message: 'Verify email failed, token is invalid' });
+                }
+            })
+        } catch (e) {
+            return res.status(500).json({ message: e.message })
+        }
+    }
 }
 
 module.exports = AuthController;

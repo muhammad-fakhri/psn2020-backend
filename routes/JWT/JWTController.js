@@ -1,5 +1,5 @@
 let JWT = require('jsonwebtoken');
-let JWT_SECRET = "#$3cr3tF0r1Ev3ry0n3$*"
+let JWT_SECRET = "#$iNd3xL1br0ruMpR0h!b1toRum$*"
 class JWtController {
     static signTokenToSchool(user) {
         if (user == null) return null;

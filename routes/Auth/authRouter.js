@@ -3,6 +3,7 @@ let express = require('express'),
     AuthController = require('./AuthController'),
     { validateBody, schemas } = require('./AuthValidation');
 
+router.get('/email/verify', AuthController.verifyEmail);
 router.post('/registration', validateBody(schemas.schoolRegistration), AuthController.schoolRegistration);
 router.post('/login', validateBody(schemas.schoolLogin), AuthController.schoolLogin);
 router.post('/registration/admin', validateBody(schemas.adminRegistration), AuthController.adminRegistration);
