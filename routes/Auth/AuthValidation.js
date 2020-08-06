@@ -62,5 +62,21 @@ module.exports = {
         resendVerifyEmail: joi.object().keys({
             email: joi.string().email().required()
         }),
+        changePassword: joi.object().keys({
+            oldPassword: joi.string().required(),
+            newPassword: joi.string()
+                .required()
+                .alphanum()
+                .min(8)
+                .regex(new RegExp(".[0-9]"))
+                .error(errors => {
+                    errors.forEach(err => {
+                        if (err.type === "string.regex.base") {
+                            err.message = "New password must begin with a letter and contain at least one numeric digit";
+                        }
+                    })
+                    return errors;
+                })
+        }),
     }
 }

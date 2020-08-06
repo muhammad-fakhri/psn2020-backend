@@ -4,6 +4,7 @@ const AdminModel = require('../Admin/AdminModel');
 const JWTController = require('../JWT/JWTController');
 const AdminController = require('../Admin/AdminController');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const Mail = require('../Mail');
 
 class AuthController {
@@ -195,6 +196,28 @@ class AuthController {
         } catch (e) {
             return res.status(500).json({ message: e.message })
         }
+    }
+
+    static async changePassword(req, res) {
+        let { oldPassword, newPassword } = req.value.body;
+        let { sub } = req.decoded;
+        let school = await SchoolModel.findById(sub);
+
+        // check old password
+        let isMatch = await school.isValidPassword(oldPassword);
+        if (!isMatch) {
+            return res.status(403).json({
+                message: 'Change password fail, your old password is wrong'
+            });
+        }
+
+        // save new password
+        const salt = await bcrypt.genSalt(10);
+        let passwordHash = await bcrypt.hash(newPassword, salt);
+        school.password = passwordHash;
+        school.save();
+
+        return res.status(200).json({ message: 'Change password success' });
     }
 }
 
