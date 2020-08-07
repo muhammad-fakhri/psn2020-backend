@@ -72,7 +72,6 @@ class AuthController {
                     return res.status(401).json({ message: 'Login failed, password is wrong' });
                 }
             });
-
         }
         catch (e) {
             return res.status(500).json({ message: e.message, school: null, token: null })

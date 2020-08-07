@@ -50,6 +50,47 @@ class SchoolController {
         }
     }
 
+    static async getSchoolDetail(req, res) {
+        let { sub } = req.decoded;
+        let school = await SchoolModel.findById(sub);
+
+        // delete unnecessary information
+        school = school.toObject();
+        delete school.password;
+        delete school.resetPasswordToken;
+        delete school.verifyEmailToken;
+        delete school.changeEmailToken;
+        delete school.verifyEmailDate;
+        delete school.createdAt;
+        delete school.updatedAt;
+
+        return res.status(200).json({ school });
+    }
+
+    static async updateSchoolDetail(req, res) {
+        let { sub } = req.decoded;
+        let { name, email, address, phone } = req.value.body;
+        let school = await SchoolModel.findById(sub);
+
+        school.name = name;
+        school.email = email;
+        school.address = address;
+        school.phone = phone;
+        school.save();
+
+        // delete unnecessary information
+        school = school.toObject();
+        delete school.password;
+        delete school.resetPasswordToken;
+        delete school.verifyEmailToken;
+        delete school.changeEmailToken;
+        delete school.verifyEmailDate;
+        delete school.createdAt;
+        delete school.updatedAt;
+
+        return res.status(200).json({ school });
+    }
+
     static async search(req, res) {
         try {
             let { searchString, skip, limit } = req.query;
