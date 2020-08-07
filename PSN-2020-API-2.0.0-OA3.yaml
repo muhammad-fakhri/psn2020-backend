@@ -248,7 +248,7 @@ paths:
   /auth/password/forgot:
     post:
       summary: Request Reset Password (Forgot Password)
-      description: Request reset user account password in case the user forgot their password
+      description: Request reset user account password in case the user forgot their password. An email will be send to user with a link, if user click it then they will open frontend page for set new password.
       tags: 
       - Auth
       requestBody:
