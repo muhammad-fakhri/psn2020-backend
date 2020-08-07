@@ -26,10 +26,25 @@ class SchoolController {
         return await school.isValidPassword(password);
     }
 
-    static async list(req, res, next) {
+    static async listAllSchools(req, res, next) {
         try {
             let schools = await SchoolModel.find({});
-            return res.status(200).json({ message: "success", schools });
+
+            // delete unnecessary information
+            let filteredSchoolsData = new Array();
+            schools.forEach(school => {
+                school = school.toObject();
+                delete school.password;
+                delete school.resetPasswordToken;
+                delete school.verifyEmailToken;
+                delete school.changeEmailToken;
+                delete school.verifyEmailDate;
+                delete school.createdAt;
+                delete school.updatedAt;
+                filteredSchoolsData.push(school);
+            })
+
+            return res.status(200).json({ schools: filteredSchoolsData });
         }
         catch (e) {
             return res.status(500).json({ message: e.message, schools: null });

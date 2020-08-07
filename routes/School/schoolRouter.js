@@ -8,6 +8,6 @@ router.get('/detail/:_id', SchoolController.get);
 router.get('/detail', JWTController.checkToken, JWTController.isSchool, SchoolController.getSchoolDetail);
 router.put('/detail', JWTController.checkToken, JWTController.isSchool, validateBody(schemas.updateSchoolDetail), SchoolController.updateSchoolDetail);
 router.get('/search', SchoolController.search);
-router.get('/', SchoolController.list);
+router.get('/', JWTController.checkToken, JWTController.isAdmin, SchoolController.listAllSchools);
 
 module.exports = router;
