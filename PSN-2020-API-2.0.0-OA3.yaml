@@ -248,7 +248,7 @@ paths:
   /auth/password/forgot:
     post:
       summary: Request Reset Password (Forgot Password)
-      description: Request reset user account password in case the user forgot their password. An email will be send to user with a link, if user click it then they will open frontend page for set new password.
+      description: Request reset user account password in case the user forgot their password. An email will be send to user with a link, if user click it then they will open frontend page for set new password. The link have query parameters (user email and reset password token) that will be used for set new password
       tags: 
       - Auth
       requestBody:
@@ -309,6 +309,9 @@ paths:
             schema:
               type: object
               properties:
+                email:
+                  type: string
+                  example: sman2bgr@gmail.com
                 token:
                   type: string
                   description: Change password token
@@ -317,6 +320,7 @@ paths:
                   format: password
                   description: New password for forgot password
               required:
+                - email
                 - token
                 - password
       responses:
