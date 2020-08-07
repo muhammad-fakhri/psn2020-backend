@@ -27,7 +27,7 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
   - name: Auth
-  - name: Bill
+  - name: Payment
   - name: Contest
   - name: Miscellaneous
   - name: School
