@@ -294,7 +294,12 @@ paths:
   /auth/password/forgot/set:
     post:
       summary: Set new password for forgot password
-      description: Set new password after forgot password
+      description: |
+        Set new password after forgot password  
+        New Password conditions:
+        * alphanumeric
+        * min 8 character
+        * Password must begin with a letter and contain at least one numeric digit
       tags: 
       - Auth
       requestBody:
@@ -344,7 +349,12 @@ paths:
   /auth/password/change:
     post:
       summary: Change Password
-      description: Change user account password, only usable by user
+      description: |
+        Change user account password, only usable by user  
+        New Password conditions:
+        * alphanumeric
+        * min 8 character
+        * Password must begin with a letter and contain at least one numeric digit
       tags: 
       - Auth
       requestBody:
