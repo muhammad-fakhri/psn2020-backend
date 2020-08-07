@@ -239,6 +239,26 @@ class AuthController {
                 .json({ message: 'Reset password request approved, check your email for further instructions' });
         });
     }
+
+    static async setForgotPassword(req, res) {
+        let { email, token, password } = req.value.body;
+        SchoolModel.findOne({ email }, async function (err, school) {
+            if (!school || school.resetPasswordToken !== token) {
+                return res.status(404).json({ message: 'Reset password failed, token is invalid' });
+            }
+
+            // Make hashed password
+            const salt = await bcrypt.genSalt(10);
+            let passwordHash = await bcrypt.hash(password, salt);
+
+            // set new password
+            school.password = passwordHash;
+            school.resetPasswordToken = null;
+            school.save();
+
+            return res.status(200).json({ message: 'Reset password success, You can now log in using new password' });
+        })
+    }
 }
 
 module.exports = AuthController;

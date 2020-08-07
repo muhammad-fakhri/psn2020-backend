@@ -39,6 +39,7 @@ class Mail {
             to: email,
             subject: "Reset Password",
             text: "You can reset your password by click the link in this email",
+            // TODO: set link to open frontend page for set new password
             html: `
                 <h2>Hello ${name}</h2>
                 <h3>You are requesting a password reset<h3> 
