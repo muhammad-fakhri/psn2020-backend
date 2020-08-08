@@ -9,24 +9,31 @@ class TeamController {
     }
     static async create(req, res) {
         try {
-            let { name, contest, student } = req.value.body,
-                { privilege, sub } = req.decoded;
-            if (privilege != 'school') {
-                return res.status(401).json({ success: false, team: null });
+            let { name, contest, students } = req.value.body,
+                { sub } = req.decoded;
+
+            // Check contest quota
+            let contestData = await ContestModel.findById({ _id: contest });
+            if (contestData.registeredTeam === contestData.maxTeam) {
+                return res.status(409).json({ message: "Contest quota is full" })
             }
-            contest = await ContestModel.findById({ _id: contest });
-            let maxTeam = contest.maxTeam;
-            let teamRegistered = await TeamModel.count({ contest });
-            if (teamRegistered >= maxTeam) {
-                return res.status(200).json({ success: false, message: "Kuota sudah penuh", team: null })
+            // Check contest availability
+            if (contestData.registrationStatus === "close") {
+                return res.status(409).json({ message: "Contest registration is closed" })
             }
-            let team = await TeamModel.create({ name, contest, school: sub, student });
-            for (let i = 0; i < student.length; i++) {
-                await StudentModel.findByIdAndUpdate({ _id: student[i] }, { team: team._id });
-            }
-            return res.status(201).json({ success: true, team });
+
+            // create team
+            let team = await TeamModel.create({ name, contest, school: sub, students });
+            students.forEach(async (student) => {
+                await StudentModel.findByIdAndUpdate(student, { team: team._id });
+            })
+            // update registered team field in contest
+            ++contestData.registeredTeam;
+            contestData.save();
+
+            return res.status(201).json({ team });
         } catch (e) {
-            return res.status(400).json({ success: false, team: null, message: e.message });
+            return res.status(500).json({ message: e.message });
         }
     }
     static async list(req, res) {

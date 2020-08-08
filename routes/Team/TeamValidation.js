@@ -18,7 +18,7 @@ module.exports = {
         create: joi.object().keys({
             name: joi.string().required(),
             contest: joi.string().required(),
-            student: joi.array().required(),
+            students: joi.array().required(),
         }),
         edit: joi.object().keys({
             _id: joi.string().required(),
