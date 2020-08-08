@@ -8,7 +8,7 @@ class ContestController {
                 contest = await ContestModel.create({ name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
             return res.status(201).json({ contest });
         } catch (e) {
-            return res.status(500).json({ message: e.message, contest: null })
+            return res.status(500).json({ message: e.message })
         }
     }
 
@@ -34,20 +34,21 @@ class ContestController {
                 return res.status(200).json({ contest });
             })
         } catch (e) {
-            return res.status(500).json({ message: "Failed" });
+            return res.status(500).json({ message: e.message });
         }
     }
 
     static async delete(req, res) {
-        let { privilege } = req.decoded;
-        if (privilege != 'admin')
-            return res.status(401).json({ message: "Not allowed.", contest: null });
         try {
-            let { _id } = req.params,
-                contest = await ContestModel.findByIdAndDelete({ _id });
-            return res.status(200).json({ message: "Success", contest });
+            let { contestId } = req.params;
+
+            await ContestModel.exists({ _id: contestId }, async function (err, result) {
+                if (!result) return res.status(404).json({ message: "Contest not found" });
+                await ContestModel.findByIdAndDelete(contestId);
+                return res.status(200).json({ message: "Contest deleted" });
+            })
         } catch (e) {
-            return res.status(500).json({ message: "Failed", contest: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 }

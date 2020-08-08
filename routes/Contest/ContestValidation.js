@@ -31,9 +31,6 @@ module.exports = {
             img: joi.string().required(),
             registrationStatus: joi.string().valid('open', 'close').required(),
             pricePerStudent: joi.number().required(),
-        }),
-        delete: joi.object().keys({
-            _id: joi.string().required(),
-        }),
+        })
     }
 }
