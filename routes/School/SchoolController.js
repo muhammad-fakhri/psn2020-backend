@@ -17,13 +17,17 @@ class SchoolController {
                 verifyEmailToken
             });
         } catch (e) {
-            throw e;
+            return res.status(500).json({ message: e.message });
         }
     }
 
     static async login(email, password) {
-        let school = await SchoolModel.findOne({ email });
-        return await school.isValidPassword(password);
+        try {
+            let school = await SchoolModel.findOne({ email });
+            return await school.isValidPassword(password);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
     }
 
     static async listAllSchools(req, res, next) {
@@ -47,7 +51,7 @@ class SchoolController {
             return res.status(200).json({ schools: filteredSchoolsData });
         }
         catch (e) {
-            return res.status(500).json({ message: e.message, schools: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
@@ -61,49 +65,57 @@ class SchoolController {
                 school = await SchoolModel.findById({ _id });
             return res.status(200).json({ school });
         } catch (e) {
-            return res.status(400).json({ message: e.message });
+            return res.status(500).json({ message: e.message });
         }
     }
 
     static async getSchoolDetail(req, res) {
-        let { sub } = req.decoded;
-        let school = await SchoolModel.findById(sub);
+        try {
+            let { sub } = req.decoded;
+            let school = await SchoolModel.findById(sub);
 
-        // delete unnecessary information
-        school = school.toObject();
-        delete school.password;
-        delete school.resetPasswordToken;
-        delete school.verifyEmailToken;
-        delete school.changeEmailToken;
-        delete school.verifyEmailDate;
-        delete school.createdAt;
-        delete school.updatedAt;
+            // delete unnecessary information
+            school = school.toObject();
+            delete school.password;
+            delete school.resetPasswordToken;
+            delete school.verifyEmailToken;
+            delete school.changeEmailToken;
+            delete school.verifyEmailDate;
+            delete school.createdAt;
+            delete school.updatedAt;
 
-        return res.status(200).json({ school });
+            return res.status(200).json({ school });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
     }
 
     static async updateSchoolDetail(req, res) {
-        let { sub } = req.decoded;
-        let { name, email, address, phone } = req.value.body;
-        let school = await SchoolModel.findById(sub);
+        try {
+            let { sub } = req.decoded;
+            let { name, email, address, phone } = req.value.body;
+            let school = await SchoolModel.findById(sub);
 
-        school.name = name;
-        school.email = email;
-        school.address = address;
-        school.phone = phone;
-        school.save();
+            school.name = name;
+            school.email = email;
+            school.address = address;
+            school.phone = phone;
+            school.save();
 
-        // delete unnecessary information
-        school = school.toObject();
-        delete school.password;
-        delete school.resetPasswordToken;
-        delete school.verifyEmailToken;
-        delete school.changeEmailToken;
-        delete school.verifyEmailDate;
-        delete school.createdAt;
-        delete school.updatedAt;
+            // delete unnecessary information
+            school = school.toObject();
+            delete school.password;
+            delete school.resetPasswordToken;
+            delete school.verifyEmailToken;
+            delete school.changeEmailToken;
+            delete school.verifyEmailDate;
+            delete school.createdAt;
+            delete school.updatedAt;
 
-        return res.status(200).json({ school });
+            return res.status(200).json({ school });
+        } catch (error) {
+            return res.status(200).json({ message: error.message });
+        }
     }
 
     static async search(req, res) {
@@ -118,7 +130,16 @@ class SchoolController {
                 .limit(parseInt(limit) || 10);
             return res.status(200).json({ schools });
         } catch (e) {
-            return res.status(400).json({ message: e.message });
+            return res.status(500).json({ message: e.message });
+        }
+    }
+
+    static async count(req, res) {
+        try {
+            let count = await SchoolModel.estimatedDocumentCount();
+            return res.status(200).json({ totalSchool: count });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
         }
     }
 }

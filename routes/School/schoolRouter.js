@@ -4,6 +4,7 @@ let express = require('express'),
     { validateBody, schemas } = require('./SchoolValidation'),
     JWTController = require('../JWT/JWTController');
 
+router.get('/count', JWTController.checkToken, JWTController.isAdmin, SchoolController.count);
 router.get('/detail/:_id', SchoolController.get);
 router.get('/detail', JWTController.checkToken, JWTController.isSchool, SchoolController.getSchoolDetail);
 router.put('/detail', JWTController.checkToken, JWTController.isSchool, validateBody(schemas.updateSchoolDetail), SchoolController.updateSchoolDetail);
