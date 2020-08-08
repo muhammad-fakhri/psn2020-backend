@@ -142,21 +142,21 @@ class SchoolController {
 
     static async getAvailable(req, res) {
         try {
-            let { school } = req.params;
-            let students = await StudentModel.find({ school, team: null });
-            return res.status(200).json({ students });
-        } catch (e) {
-            return res.status(400).json({ message: e.message, students: null });
-        }
-    }
+            let { sub, privilege } = req.decoded,
+                { schoolId } = req.params;
 
-    static async getUnbooked(req, res) {
-        try {
-            let { school } = req.params,
-                students = await StudentModel.find({ accommodationBooking: false, school });
-            return res.status(200).json({ students });
+            await SchoolModel.exists({ _id: schoolId }, async function (err, result) {
+                if (!result) return res.status(404).json({ message: "School not found" });
+
+                if (privilege === "school") {
+                    if (sub !== schoolId) return res.status(403).json({ message: "You do not have access to this resource" });
+                }
+
+                let students = await StudentModel.find({ school: schoolId, team: null });
+                return res.status(200).json({ students });
+            })
         } catch (e) {
-            return res.status(400).json({ message: e.message });
+            return res.status(500).json({ message: e.message });
         }
     }
 }
