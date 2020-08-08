@@ -46,10 +46,14 @@ class SchoolController {
 
     static async getSchoolDetailById(req, res) {
         try {
-            let { schoolId } = req.params,
-                school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
-            if (!school) return res.status(404).json({ message: 'School not found' });
-            return res.status(200).json({ school });
+            let { schoolId } = req.params;
+            await SchoolModel.exists({ _id: schoolId }, async function (err, result) {
+                // if school not exist
+                if (!result) return res.status(404).json({ message: 'School not found' });
+
+                let school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
+                return res.status(200).json({ school });
+            })
         } catch (e) {
             return res.status(500).json({ message: e.message });
         }

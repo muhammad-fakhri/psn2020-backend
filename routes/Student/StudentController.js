@@ -1,4 +1,5 @@
-let StudentModel = require('./StudentModel');
+const StudentModel = require('./StudentModel');
+const SchoolModel = require("../School/SchoolModel");
 const { func } = require('joi');
 class SchoolController {
     static async create(req, res) {
@@ -14,24 +15,28 @@ class SchoolController {
 
     static async listBySchool(req, res) {
         try {
-            let { sub, privilege } = req.decoded,
-                { school } = req.params,
-                students = null;
-            if (privilege == "school") {
-                students = await StudentModel.find({ school });
-                return res.status(200).json({ message: "Success.", students });
+            let { privilege } = req.decoded,
+                { schoolId } = req.params;
+
+            if (!schoolId) return res.status(400).json({ message: "Some required data not provided." });
+
+            if (schoolId === "all") {
+                if (privilege !== "admin") {
+                    return res.status(403).json({ message: "You do not have access to this resource" });
+                }
+                let students = await StudentModel.find({});
+                return res.status(200).json({ students });
             }
-            else {
-                // someday will be securing this API
-                // return res.status(401).json({message:"Not allowed.", students:null});
-                if (school == "all")
-                    students = await StudentModel.find();
-                else
-                    students = await StudentModel.find({ school });
-                return res.status(200).json({ message: "Success.", students });
-            }
+
+            await SchoolModel.exists({ _id: schoolId }, async function (err, result) {
+                // if school not exist
+                if (!result) return res.status(404).json({ message: "School not found" });
+
+                let students = await StudentModel.find({ school: schoolId });
+                return res.status(200).json({ students });
+            })
         } catch (e) {
-            return res.status(400).json({ message: e.message, students: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
