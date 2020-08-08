@@ -21,11 +21,12 @@ module.exports = {
             phone: joi.string().required(),
             gender: joi.string().valid('male', 'female').required()
         }),
-        edit: joi.object().keys({
+        update: joi.object().keys({
             _id: joi.string().required(),
             name: joi.string().required(),
             email: joi.string().email().required(),
-            phone: joi.string().required()
+            phone: joi.string().required(),
+            gender: joi.string().valid('male', 'female').required()
         }),
         delete: joi.object().keys({
             _id: joi.string().required(),

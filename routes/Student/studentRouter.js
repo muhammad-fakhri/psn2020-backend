@@ -10,6 +10,6 @@ router.get('/school/:school', JWtController.checkToken, StudentController.listBy
 router.get('/unbooked-accommodation/school/:school', JWtController.checkToken, StudentController.getUnbooked);
 router.delete('/:_id', JWtController.checkToken, JWtController.isSchool, StudentController.delete);
 router.post('/', JWtController.checkToken, JWtController.isSchool, validateBody(schemas.create), StudentController.create);
-router.put('/', JWtController.checkToken, JWtController.isSchool, validateBody(schemas.edit), StudentController.edit);
+router.put('/', JWtController.checkToken, validateBody(schemas.update), StudentController.update);
 
 module.exports = router;

@@ -34,22 +34,35 @@ class SchoolController {
         }
     }
 
-    static async edit(req, res) {
+    static async update(req, res) {
         try {
-            let { _id, name, email, phone } = req.value.body,
+            let { _id, name, email, phone, gender } = req.value.body,
                 { sub, privilege } = req.decoded;
-            if (privilege != "school") {
-                return res.status(401).json({ message: "Not allowed.", success: false });
+            let student = await StudentModel.findById(_id);
+
+            // if student not exist
+            if (!student) return res.status(404).json({ message: 'Student data not found' });
+
+            if (privilege === "school") {
+                if (sub != student.school) {
+                    return res.status(403).json({ message: 'You do not have access to this resource' });
+                }
             }
-            StudentModel.findOneAndUpdate({ _id }, { name, email, phone }, (err) => {
-                if (err)
-                    return res.status(400).json({ message: err.message, success: false });
-            }).then(async (student) => {
-                return res.status(200).json({ message: "success", success: true });
+
+            // check student already final or not
+            if (student.team) {
+                student.populate('team');
+                if (student.team.isFinal) {
+                    return res.status(409).json({ message: 'Update student fail, student data with the given ID already final' });
+                }
+            }
+
+            StudentModel.findByIdAndUpdate(_id, { name, email, phone, gender }, (err, student) => {
+                return res.status(200).json({ student });
             });
         }
         catch (e) {
-            return res.status(400).json({ message: e.message, success: false });
+            return res.status(500).json({ message: e.message });
         }
     }
 
