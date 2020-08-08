@@ -115,11 +115,28 @@ class SchoolController {
 
     static async count(req, res) {
         try {
-            let { school } = req.params,
-                totalStudent = await StudentModel.count({ school });
-            return res.status(200).json({ totalStudent });
+            let { privilege } = req.decoded,
+                { schoolId } = req.params;
+
+            if (!schoolId) return res.status(400).json({ message: "Some required data not provided." });
+
+            if (schoolId === "all") {
+                if (privilege !== "admin") {
+                    return res.status(403).json({ message: "You do not have access to this resource" });
+                }
+                let totalStudent = await StudentModel.estimatedDocumentCount();
+                return res.status(200).json({ totalStudent });
+            }
+
+            await SchoolModel.exists({ _id: schoolId }, async function (err, result) {
+                // if school not exist
+                if (!result) return res.status(404).json({ message: "School not found" });
+
+                let totalStudent = await StudentModel.countDocuments({ school: schoolId });
+                return res.status(200).json({ totalStudent });
+            })
         } catch (e) {
-            return res.status(400).json({ message: e.message, totalStudent: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 

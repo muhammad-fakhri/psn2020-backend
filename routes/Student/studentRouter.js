@@ -5,7 +5,7 @@ let express = require('express'),
     JWtController = require('../JWT/JWTController');
 
 router.get('/available/:school', JWtController.checkToken, StudentController.getAvailable);
-router.get('/count/:school', JWtController.checkToken, StudentController.count);
+router.get('/count/:schoolId', JWtController.checkToken, StudentController.count);
 router.get('/school/:schoolId', JWtController.checkToken, StudentController.listBySchool);
 router.get('/unbooked-accommodation/school/:school', JWtController.checkToken, StudentController.getUnbooked);
 router.delete('/:studentId', JWtController.checkToken, StudentController.delete);
