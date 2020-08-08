@@ -2,9 +2,6 @@ let ContestModel = require('./ContestModel');
 let TeamModel = require('../Team/TeamModel');
 
 class ContestController {
-    constructor(params) {
-
-    }
     static async create(req, res) {
         let { privilege } = req.decoded;
         console.log(req.decoded)
@@ -18,23 +15,17 @@ class ContestController {
             return res.status(500).json({ message: e.message, contest: null })
         }
     }
+
     static async list(req, res) {
         try {
             let { registrationStatus } = req.query,
-                condition = (registrationStatus ? { registrationStatus } : {}),
-                data = await ContestModel.find(condition),
-                contests = [];
-            for (let i = 0; i < data.length; i++) {
-                let contest = data[i].toObject();
-                contest.registeredTeam = await TeamModel.find({ contest: contest._id }).count();
-                contests.push(contest);
-            }
-            // console.log(condition,registrationStatus);
-            return res.status(200).json({ message: "Success.", contests });
+                contests = await ContestModel.find(registrationStatus ? { registrationStatus } : {});
+            return res.status(200).json({ contests });
         } catch (e) {
-            return res.status(500).json({ message: e.message, contests: null })
+            return res.status(500).json({ message: e.message })
         }
     }
+
     static async edit(req, res) {
         let { privilege } = req.decoded;
         if (privilege != 'admin')
@@ -47,6 +38,7 @@ class ContestController {
             return res.status(500).json({ message: "Failed" });
         }
     }
+
     static async delete(req, res) {
         let { privilege } = req.decoded;
         if (privilege != 'admin')
