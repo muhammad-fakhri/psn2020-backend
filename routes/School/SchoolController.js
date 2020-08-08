@@ -132,11 +132,13 @@ class SchoolController {
     static async search(req, res) {
         try {
             let { searchString, skip, limit } = req.query;
-            console.log(searchString);
-            let schools = await SchoolModel.find(
-                { $text: { $search: searchString } },
-                { score: { "$meta": "textScore" } })
-                .sort({ score: { "$meta": "textScore" } })
+            if (!searchString) return res.status(400).json({ message: 'Some required data not provided' });
+            let schools = await SchoolModel.find({
+                name: {
+                    $regex: new RegExp(searchString, "ig")
+                }
+            })
+                .sort({ name: 'asc' })
                 .skip(parseInt(skip) || 0)
                 .limit(parseInt(limit) || 10);
             return res.status(200).json({ schools });
