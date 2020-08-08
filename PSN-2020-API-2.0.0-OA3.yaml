@@ -26,6 +26,7 @@ info:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
+  - name: Admin
   - name: Auth
   - name: Payment
   - name: Contest
@@ -33,7 +34,6 @@ tags:
   - name: School
   - name: Student
   - name: Team
-  - name: Admin
 paths:
   /:
     get:
@@ -421,7 +421,7 @@ paths:
     post:
       summary: Delete Subadmin
       tags:
-        - Auth
+        - Admin
       requestBody:
         required: true
         content:
