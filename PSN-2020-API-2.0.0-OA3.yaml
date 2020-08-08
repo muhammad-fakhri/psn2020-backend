@@ -33,6 +33,7 @@ tags:
   - name: School
   - name: Student
   - name: Team
+  - name: Admin
 paths:
   /:
     get:
@@ -416,6 +417,60 @@ paths:
                 Old password wrong:
                   value:
                     message: Change password fail, your old password is wrong
+  /admin/delete:
+    post:
+      summary: Delete Subadmin
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: muhammadfakhri@gmail.com
+                password:
+                  type: string
+                  example: passwordhehe
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Admin Login Success  
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admin:
+                    $ref: '#/components/schemas/AdminWithId'
+                  token:
+                    type: string
+                    description: JWT Token
+                required:
+                  - message
+                  - admin
+                  - token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/LoginFail'
+        '404':
+          description: Login failed, email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login failed, email not found
+                required:
+                  - message
   /auth/login/admin:
     post:
       summary: Admin Login
