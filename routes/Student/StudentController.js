@@ -1,4 +1,5 @@
 let StudentModel = require('./StudentModel');
+const { func } = require('joi');
 class SchoolController {
     static async create(req, res) {
         try {
@@ -38,28 +39,36 @@ class SchoolController {
         try {
             let { _id, name, email, phone, gender } = req.value.body,
                 { sub, privilege } = req.decoded;
-            let student = await StudentModel.findById(_id);
 
-            // if student not exist
-            if (!student) return res.status(404).json({ message: 'Student data not found' });
+            await StudentModel.exists({ _id }, async function (err, result) {
+                // if student not exist
+                if (!result) return res.status(404).json({ message: 'Student data not found' });
 
-            if (privilege === "school") {
-                if (sub != student.school) {
-                    return res.status(403).json({ message: 'You do not have access to this resource' });
+                let student = await StudentModel.findById(_id);
+
+                if (privilege === "school") {
+                    if (sub != student.school) {
+                        return res.status(403).json({ message: 'You do not have access to this resource' });
+                    }
                 }
-            }
 
-            // check student already final or not
-            if (student.team) {
-                student.populate('team');
-                if (student.team.isFinal) {
-                    return res.status(409).json({ message: 'Update student fail, student data with the given ID already final' });
+                // check student already final or not
+                // TODO: check this is working or not
+                if (student.team) {
+                    student.populate('team');
+                    if (student.team.isFinal) {
+                        return res.status(409).json({ message: 'Update student fail, student data with the given ID already final' });
+                    }
                 }
-            }
 
-            StudentModel.findByIdAndUpdate(_id, { name, email, phone, gender }, (err, student) => {
+                // update student data
+                student.name = name;
+                student.email = email;
+                student.phone = phone;
+                student.gender = gender;
+                student.save();
                 return res.status(200).json({ student });
-            });
+            })
         }
         catch (e) {
             return res.status(500).json({ message: e.message });
@@ -67,20 +76,35 @@ class SchoolController {
     }
 
     static async delete(req, res) {
-        let { privilege, sub } = req.decoded;
-        if (privilege != 'school')
-            return res.status(401).json({ message: "Not allowed.", student: null });
         try {
-            let { _id } = req.params,
-                student = await StudentModel.findById({ _id });
-            if (sub == student.school) {
+            let { privilege, sub } = req.decoded,
+                { studentId } = req.params;
+
+            await StudentModel.exists({ _id: studentId }, async function (err, result) {
+                if (!result) return res.status(404).json({ message: "Student data not found" });
+
+                let student = await StudentModel.findById(studentId)
+
+                if (privilege === 'school') {
+                    if (sub != student.school) {
+                        return res.status(403).json({ message: "You do not have access to this resource" });
+                    }
+                }
+
+                // check student already final or not
+                // TODO: check this is working or not
+                if (student.team) {
+                    student.populate('team');
+                    if (student.team.isFinal) {
+                        return res.status(409).json({ message: 'Delete student fail, student data with the given ID already final' });
+                    }
+                }
+
                 await student.remove();
-                return res.status(200).json({ message: "Success", student });
-            } else {
-                return res.status(401).json({ message: "Not allowed", student: null });
-            }
+                return res.status(200).json({ message: "Student data deleted" });
+            })
         } catch (e) {
-            return res.status(500).json({ message: "Failed", student: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
