@@ -20,10 +20,11 @@ module.exports = {
             contest: joi.string().required(),
             students: joi.array().required(),
         }),
-        edit: joi.object().keys({
+        update: joi.object().keys({
             _id: joi.string().required(),
             name: joi.string().required(),
-            student: joi.array().required(),
+            contest: joi.string().required(),
+            students: joi.array().required(),
         }),
         delete: joi.object().keys({
             _id: joi.string().required(),

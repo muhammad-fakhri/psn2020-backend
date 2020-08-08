@@ -4,9 +4,6 @@ let StudentModel = require('../Student/StudentModel');
 let ExcelJS = require('exceljs');
 
 class TeamController {
-    constructor(params) {
-
-    }
     static async create(req, res) {
         try {
             let { name, contest, students } = req.value.body,
@@ -36,6 +33,7 @@ class TeamController {
             return res.status(500).json({ message: e.message });
         }
     }
+
     static async list(req, res) {
         try {
             let { school, contest, populateContest, populateStudent } = req.query, teams = null;
@@ -57,6 +55,7 @@ class TeamController {
             return res.status(500).json({ message: e.message, teams: null });
         }
     }
+
     static async get(req, res) {
         try {
             let { _id } = req.params, { populateContest, populateStudent } = req.query,
@@ -68,28 +67,51 @@ class TeamController {
             return res.status(500).json({ message: e.message, team: null });
         }
     }
-    static async edit(req, res) {
+
+    static async update(req, res) {
         try {
-            let { _id, name, student } = req.value.body,
-                { sub, privilege } = req.decoded,
-                team = await TeamModel.findById({ _id });
-            if (team.school != sub) {
-                return res.status(401).json({ message: "Not allowed, school id not match." });
-            }
-            // hapus id tim di student
-            for (let i = 0; i < team.student.length; i++) {
-                await StudentModel.findByIdAndUpdate({ _id: team.student[i] }, { team: null });
-            }
-            await team.update({ name, student });
-            // assign id tim ke student baru
-            for (let i = 0; i < student.length; i++) {
-                await StudentModel.findByIdAndUpdate({ _id: student[i] }, { team: team._id });
-            }
-            return res.status(200).json({ message: "Success" });
+            let { _id, name, contest, students } = req.value.body,
+                { sub, privilege } = req.decoded;
+
+            await TeamModel.exists({ _id }, async function (err, result) {
+                if (!result) {
+                    return res.status(404).json({ message: "Team not found" });
+                }
+
+                let team = await TeamModel.findById({ _id });
+
+                if (privilege === "school") {
+                    if (team.school != sub) {
+                        return res.status(403).json({ message: "You do not have access to this resource" });
+                    }
+                }
+
+                // check team already final or not
+                if (team.isFinal) {
+                    return res.status(409).json({ message: "Update team fail, team data with the given ID already final" });
+                }
+
+                // delete team id from old student members
+                team.students.forEach(async (student) => {
+                    await StudentModel.findByIdAndUpdate(student, { team: null });
+                });
+
+                // update team data
+                await team.updateOne({ name, contest, students });
+
+                // update team id in new student members data
+                students.forEach(async (student) => {
+                    await StudentModel.findByIdAndUpdate(student, { team: team._id });
+                });
+
+                let teamData = await TeamModel.findById(_id);
+                return res.status(200).json({ team: teamData });
+            });
         } catch (e) {
-            return res.status(400).json({ message: e.message })
+            return res.status(500).json({ message: e.message })
         }
     }
+
     static async delete(req, res) {
         try {
             let { _id } = req.params,
@@ -110,6 +132,7 @@ class TeamController {
             return res.status(400).json({ success: false, message: e.message });
         }
     }
+
     static async populatedTeams(teams) {
         let populatedTeams = [];
         for (let i = 0; i < teams.length; i++) {
@@ -118,6 +141,7 @@ class TeamController {
         }
         return populatedTeams;
     }
+
     static async findBySchool(school, populate) {
         try {
             let teams = null;
@@ -130,6 +154,7 @@ class TeamController {
             throw e;
         }
     }
+
     static async count(req, res) {
         try {
             let { school } = req.params,
@@ -139,6 +164,7 @@ class TeamController {
             return res.status(400).json({ message: e.message, totalTeams: null });
         }
     }
+
     static async getUnpaid(req, res) {
         try {
             let { school } = req.params, { populateContest, populateStudent } = req.query,
@@ -151,6 +177,7 @@ class TeamController {
             return res.status(400).json({ message: e.message });
         }
     }
+
     static async getExcelByContest(req, res) {
         try {
             let { contest } = req.params;
