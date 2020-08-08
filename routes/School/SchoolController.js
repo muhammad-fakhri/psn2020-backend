@@ -32,23 +32,8 @@ class SchoolController {
 
     static async listAllSchools(req, res, next) {
         try {
-            let schools = await SchoolModel.find({});
-
-            // delete unnecessary information
-            let filteredSchoolsData = new Array();
-            schools.forEach(school => {
-                school = school.toObject();
-                delete school.password;
-                delete school.resetPasswordToken;
-                delete school.verifyEmailToken;
-                delete school.changeEmailToken;
-                delete school.verifyEmailDate;
-                delete school.createdAt;
-                delete school.updatedAt;
-                filteredSchoolsData.push(school);
-            })
-
-            return res.status(200).json({ schools: filteredSchoolsData });
+            let schools = await SchoolModel.find({}, '_id name email address phone isVerifiedEmail');
+            return res.status(200).json({ schools });
         }
         catch (e) {
             return res.status(500).json({ message: e.message });
@@ -62,18 +47,8 @@ class SchoolController {
     static async getSchoolDetailById(req, res) {
         try {
             let { schoolId } = req.params,
-                school = await SchoolModel.findById(schoolId);
+                school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
             if (!school) return res.status(404).json({ message: 'School not found' });
-
-            // delete unnecessary information
-            school = school.toObject();
-            delete school.password;
-            delete school.resetPasswordToken;
-            delete school.verifyEmailToken;
-            delete school.changeEmailToken;
-            delete school.verifyEmailDate;
-            delete school.createdAt;
-            delete school.updatedAt;
             return res.status(200).json({ school });
         } catch (e) {
             return res.status(500).json({ message: e.message });
@@ -83,18 +58,7 @@ class SchoolController {
     static async getSchoolDetail(req, res) {
         try {
             let { sub } = req.decoded;
-            let school = await SchoolModel.findById(sub);
-
-            // delete unnecessary information
-            school = school.toObject();
-            delete school.password;
-            delete school.resetPasswordToken;
-            delete school.verifyEmailToken;
-            delete school.changeEmailToken;
-            delete school.verifyEmailDate;
-            delete school.createdAt;
-            delete school.updatedAt;
-
+            let school = await SchoolModel.findById(sub, '_id name email address phone isVerifiedEmail');
             return res.status(200).json({ school });
         } catch (error) {
             return res.status(500).json({ message: error.message });
@@ -105,24 +69,13 @@ class SchoolController {
         try {
             let { sub } = req.decoded;
             let { name, email, address, phone } = req.value.body;
-            let school = await SchoolModel.findById(sub);
+            let school = await SchoolModel.findById(sub, '_id name email address phone isVerifiedEmail');
 
             school.name = name;
             school.email = email;
             school.address = address;
             school.phone = phone;
             school.save();
-
-            // delete unnecessary information
-            school = school.toObject();
-            delete school.password;
-            delete school.resetPasswordToken;
-            delete school.verifyEmailToken;
-            delete school.changeEmailToken;
-            delete school.verifyEmailDate;
-            delete school.createdAt;
-            delete school.updatedAt;
-
             return res.status(200).json({ school });
         } catch (error) {
             return res.status(200).json({ message: error.message });
@@ -137,7 +90,7 @@ class SchoolController {
                 name: {
                     $regex: new RegExp(searchString, "ig")
                 }
-            })
+            }, '_id name email address phone isVerifiedEmail')
                 .sort({ name: 'asc' })
                 .skip(parseInt(skip) || 0)
                 .limit(parseInt(limit) || 10);

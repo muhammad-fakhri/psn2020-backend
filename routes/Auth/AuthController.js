@@ -45,7 +45,7 @@ class AuthController {
     static async schoolLogin(req, res) {
         try {
             let { email, password } = req.value.body;
-            SchoolModel.findOne({ email }, async function (err, school) {
+            SchoolModel.findOne({ email }, '_id name email address phone isVerifiedEmail', async function (err, school) {
                 if (!school) {
                     return res.status(404).json({ message: 'Login failed, email not found' });
                 }
@@ -56,17 +56,6 @@ class AuthController {
                 let isMatch = await SchoolController.login(email, password);
                 if (isMatch) {
                     let token = JWTController.signTokenToSchool(school);
-
-                    // remove unnecessary information
-                    school = school.toObject();
-                    delete school.password;
-                    delete school.resetPasswordToken;
-                    delete school.verifyEmailToken;
-                    delete school.changeEmailToken;
-                    delete school.verifyEmailDate;
-                    delete school.createdAt;
-                    delete school.updatedAt;
-
                     return res.status(200).json({ school, token });
                 } else {
                     return res.status(401).json({ message: 'Login failed, password is wrong' });
@@ -105,7 +94,7 @@ class AuthController {
         try {
             let { email, password } = req.value.body;
 
-            AdminModel.findOne({ email }, async function (err, admin) {
+            AdminModel.findOne({ email }, '_id name email isSuperAdmin', async function (err, admin) {
                 if (!admin) {
                     return res.status(404).json({ message: 'Login failed, email not found' });
                 }
@@ -113,11 +102,6 @@ class AuthController {
                 let isMatch = await AdminController.login(email, password);
                 if (isMatch) {
                     let token = JWTController.signTokenToAdmin(admin);
-
-                    // remove unnecessary information
-                    admin = admin.toObject();
-                    delete admin.password;
-
                     return res.status(200).json({ admin, token });
                 } else {
                     return res.status(401).json({ message: 'Login failed, password is wrong' });
@@ -135,32 +119,35 @@ class AuthController {
                 return res.status(400).json({ message: 'Some required data not provided' });
             }
 
-            SchoolModel.findOne({ email: req.query.email }, function (err, school) {
-                // make sure account exist
-                if (!school) {
-                    return res.status(404).json({ message: 'Verify email failed, email not found' });
-                }
+            SchoolModel.findOne({ email: req.query.email },
+                '_id name email address phone isVerifiedEmail verifyEmailToken verifyEmailDate',
+                function (err, school) {
+                    // make sure account exist
+                    if (!school) {
+                        return res.status(404).json({ message: 'Verify email failed, email not found' });
+                    }
 
-                if (school.verifyEmailToken === req.query.token) {
-                    school.isVerifiedEmail = true;
-                    school.verifyEmailToken = null;
-                    school.verifyEmailDate = Date.now();
-                    school.save();
+                    if (school.verifyEmailToken === req.query.token) {
+                        school.isVerifiedEmail = true;
+                        school.verifyEmailToken = null;
+                        school.verifyEmailDate = Date.now();
+                        school.save();
 
-                    // login user
-                    let token = JWTController.signTokenToSchool(school);
+                        // login user
+                        let token = JWTController.signTokenToSchool(school);
 
-                    // TODO: redirect to front end "Email Verified Page"
+                        // TODO: redirect to front end "Email Verified Page"
+                        // TODO: remove unneccesary information first before return it"
 
-                    return res.status(200).json({
-                        message: 'Email verified, login success',
-                        school,
-                        token
-                    });
-                } else {
-                    return res.status(404).json({ message: 'Verify email failed, token is invalid' });
-                }
-            })
+                        return res.status(200).json({
+                            message: 'Email verified, login success',
+                            school,
+                            token
+                        });
+                    } else {
+                        return res.status(404).json({ message: 'Verify email failed, token is invalid' });
+                    }
+                })
         } catch (e) {
             return res.status(500).json({ message: e.message })
         }
