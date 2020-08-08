@@ -25,12 +25,12 @@ module.exports = {
         }),
         edit: joi.object().keys({
             _id: joi.string().required(),
-            img: joi.string().required(),
             name: joi.string().required(),
             memberPerTeam: joi.number().required(),
             maxTeam: joi.number().required(),
+            img: joi.string().required(),
+            registrationStatus: joi.string().valid('open', 'close').required(),
             pricePerStudent: joi.number().required(),
-            registrationStatus: joi.string().required(),
         }),
         delete: joi.object().keys({
             _id: joi.string().required(),
