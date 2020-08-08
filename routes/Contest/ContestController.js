@@ -4,13 +4,13 @@ let TeamModel = require('../Team/TeamModel');
 class ContestController {
     static async create(req, res) {
         let { privilege } = req.decoded;
-        console.log(req.decoded)
-        if (privilege != 'admin')
-            return res.status(401).json({ message: "Not allowed.", contest: null });
         try {
-            let { name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus } = req.value.body,
-                contest = await ContestModel.create({ name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus });
-            return res.status(201).json({ message: "Success.", contest });
+            if (privilege !== 'admin') {
+                return res.status(403).json({ message: "You do not have access to this resource" });
+            }
+            let { name, memberPerTeam, maxTeam, img, registrationStatus, pricePerStudent } = req.value.body,
+                contest = await ContestModel.create({ name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
+            return res.status(201).json({ contest });
         } catch (e) {
             return res.status(500).json({ message: e.message, contest: null })
         }
