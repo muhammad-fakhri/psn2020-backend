@@ -18,7 +18,8 @@ module.exports = {
         create: joi.object().keys({
             name: joi.string().required(),
             email: joi.string().email().required(),
-            phone: joi.string().required()
+            phone: joi.string().required(),
+            gender: joi.string().valid('male', 'female').required()
         }),
         edit: joi.object().keys({
             _id: joi.string().required(),

@@ -1,21 +1,16 @@
 let StudentModel = require('./StudentModel');
 class SchoolController {
-    constructor(params) {
-
-    }
     static async create(req, res) {
         try {
-            let { name, email, phone } = req.value.body,
-                { sub, privilege } = req.decoded;
-            if (privilege != "school") {
-                return res.status(401).json({ message: "Not allowed.", student: null });
-            }
-            let student = await StudentModel.create({ name, email, phone, school: sub });
-            return res.status(201).json({ message: "Student created.", student });
+            let { name, email, phone, gender } = req.value.body,
+                { sub } = req.decoded;
+            let student = await StudentModel.create({ name, email, phone, gender, school: sub });
+            return res.status(201).json({ student });
         } catch (e) {
-            return res.status(400).json({ message: e.message, student: null });
+            return res.status(500).json({ message: e.message });
         }
     }
+
     static async listBySchool(req, res) {
         try {
             let { sub, privilege } = req.decoded,
@@ -38,6 +33,7 @@ class SchoolController {
             return res.status(400).json({ message: e.message, students: null });
         }
     }
+
     static async edit(req, res) {
         try {
             let { _id, name, email, phone } = req.value.body,
@@ -56,6 +52,7 @@ class SchoolController {
             return res.status(400).json({ message: e.message, success: false });
         }
     }
+
     static async delete(req, res) {
         let { privilege, sub } = req.decoded;
         if (privilege != 'school')
@@ -73,6 +70,7 @@ class SchoolController {
             return res.status(500).json({ message: "Failed", student: null });
         }
     }
+
     static async count(req, res) {
         try {
             let { school } = req.params,
@@ -82,6 +80,7 @@ class SchoolController {
             return res.status(400).json({ message: e.message, totalStudent: null });
         }
     }
+
     static async getAvailable(req, res) {
         try {
             let { school } = req.params;
@@ -91,6 +90,7 @@ class SchoolController {
             return res.status(400).json({ message: e.message, students: null });
         }
     }
+
     static async getUnbooked(req, res) {
         try {
             let { school } = req.params,
