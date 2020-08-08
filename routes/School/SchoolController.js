@@ -59,10 +59,21 @@ class SchoolController {
         return SchoolModel;
     }
 
-    static async get(req, res) {
+    static async getSchoolDetailById(req, res) {
         try {
-            let { _id } = req.params,
-                school = await SchoolModel.findById({ _id });
+            let { schoolId } = req.params,
+                school = await SchoolModel.findById(schoolId);
+            if (!school) return res.status(404).json({ message: 'School not found' });
+
+            // delete unnecessary information
+            school = school.toObject();
+            delete school.password;
+            delete school.resetPasswordToken;
+            delete school.verifyEmailToken;
+            delete school.changeEmailToken;
+            delete school.verifyEmailDate;
+            delete school.createdAt;
+            delete school.updatedAt;
             return res.status(200).json({ school });
         } catch (e) {
             return res.status(500).json({ message: e.message });

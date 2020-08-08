@@ -20,6 +20,6 @@ module.exports = {
             email: joi.string().email().required(),
             address: joi.string().required(),
             phone: joi.string().required()
-        }),
+        })
     }
 }
