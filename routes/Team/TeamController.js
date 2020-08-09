@@ -12,13 +12,16 @@ class TeamController {
 
             // Check contest quota
             let contestData = await ContestModel.findById({ _id: contest });
-            if (contestData.registeredTeam === contestData.maxTeam) {
+            let registeredTeam = await TeamModel.count({ contest });
+            if (registeredTeam >= contestData.maxTeam) {
                 return res.status(409).json({ message: "Contest quota is full" })
             }
             // Check contest availability
             if (contestData.registrationStatus === "close") {
                 return res.status(409).json({ message: "Contest registration is closed" })
             }
+
+            // TODO: check student, are they already in a team or not
 
             // create team
             let team = await TeamModel.create({ name, contest, school: sub, students });
@@ -39,7 +42,7 @@ class TeamController {
         try {
             let { privilege } = req.decoded;
             let { school, contest, populateContest, populateStudent } = req.query;
-            
+
             // if no parameter is used
             if (!school && !contest) {
                 if (privilege !== 'admin') {
@@ -153,22 +156,37 @@ class TeamController {
 
     static async delete(req, res) {
         try {
-            let { _id } = req.params,
-                { sub } = req.decoded,
-                team = await TeamModel.findById({ _id });
-            console.log(_id);
-            // if(sub != team.school){
-            //     return res.status(401).json({message:"Not allowed, school id not match."});
-            // }
-            for (let i = 0; i < team.student.length; i++) {
-                await StudentModel.findByIdAndUpdate({ _id: team.student[i] }, { team: null });
-            }
-            if (team.isPaid == true)
-                return res.status(400).json({ success: false, message: "Team sudah dibayar, tidak dapat dihapus." });
-            await team.remove();
-            return res.status(200).json({ success: true, message: "Success" });
+            let { teamId } = req.params,
+                { sub, privilege } = req.decoded;
+
+            await TeamModel.exists({ _id: teamId }, async function (err, result) {
+                if (!result) {
+                    return res.status(404).json({ message: "Team not found" });
+                }
+
+                let team = await TeamModel.findById(teamId);
+
+                if (privilege === 'school') {
+                    if (sub != team.school) {
+                        return res.status(403).json({ message: "You do not have access to this resource" });
+                    }
+                }
+
+                if (team.isFinal) {
+                    return res.status(409).json({ message: "Delete team fail, team data with the given ID already final" });
+                } else if (team.isPaid) {
+                    return res.status(409).json({ message: "Delete team fail, team data with the given ID already paid" });
+                }
+
+                team.students.forEach(async function (student) {
+                    await StudentModel.findByIdAndUpdate(student, { team: null });
+                });
+
+                await team.remove();
+                return res.status(200).json({ message: "Team deleted" });
+            })
         } catch (e) {
-            return res.status(400).json({ success: false, message: e.message });
+            return res.status(500).json({ message: e.message });
         }
     }
 

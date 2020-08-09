@@ -15,8 +15,15 @@ class ContestController {
     static async list(req, res) {
         try {
             let { registrationStatus } = req.query,
-                contests = await ContestModel.find(registrationStatus ? { registrationStatus } : {});
-            return res.status(200).json({ contests });
+                contests = await ContestModel.find(registrationStatus ? { registrationStatus } : {}),
+                contestsData = new Array();
+
+            for (let i = 0; i < contests.length; i++) {
+                let contest = contests[i].toObject();
+                contest.registeredTeam = await TeamModel.count({ contest: contest._id });
+                contestsData.push(contest);
+            }
+            return res.status(200).json({ contests: contestsData });
         } catch (e) {
             return res.status(500).json({ message: e.message })
         }
@@ -44,6 +51,8 @@ class ContestController {
 
             await ContestModel.exists({ _id: contestId }, async function (err, result) {
                 if (!result) return res.status(404).json({ message: "Contest not found" });
+                // TODO: check there is already team that is final or not
+                // TODO: update contest id in all team
                 await ContestModel.findByIdAndDelete(contestId);
                 return res.status(200).json({ message: "Contest deleted" });
             })
