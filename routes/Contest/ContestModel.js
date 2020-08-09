@@ -37,12 +37,6 @@ let contestSchema = new Schema({
             "close"
         ],
         required: true
-    },
-    registeredTeam: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0
     }
 });
 

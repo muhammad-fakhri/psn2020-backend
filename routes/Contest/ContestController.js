@@ -2,61 +2,62 @@ let ContestModel = require('./ContestModel');
 let TeamModel = require('../Team/TeamModel');
 
 class ContestController {
-    constructor(params) {
-
-    }
     static async create(req, res) {
-        let { privilege } = req.decoded;
-        console.log(req.decoded)
-        if (privilege != 'admin')
-            return res.status(401).json({ message: "Not allowed.", contest: null });
         try {
-            let { name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus } = req.value.body,
-                contest = await ContestModel.create({ name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus });
-            return res.status(201).json({ message: "Success.", contest });
+            let { name, memberPerTeam, maxTeam, img, registrationStatus, pricePerStudent } = req.value.body,
+                contest = await ContestModel.create({ name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
+            return res.status(201).json({ contest });
         } catch (e) {
-            return res.status(500).json({ message: e.message, contest: null })
+            return res.status(500).json({ message: e.message })
         }
     }
+
     static async list(req, res) {
         try {
             let { registrationStatus } = req.query,
-                condition = (registrationStatus ? { registrationStatus } : {}),
-                data = await ContestModel.find(condition),
-                contests = [];
-            for (let i = 0; i < data.length; i++) {
-                let contest = data[i].toObject();
-                contest.registeredTeam = await TeamModel.find({ contest: contest._id }).count();
-                contests.push(contest);
+                contests = await ContestModel.find(registrationStatus ? { registrationStatus } : {}),
+                contestsData = new Array();
+
+            for (let i = 0; i < contests.length; i++) {
+                let contest = contests[i].toObject();
+                contest.registeredTeam = await TeamModel.count({ contest: contest._id });
+                contestsData.push(contest);
             }
-            // console.log(condition,registrationStatus);
-            return res.status(200).json({ message: "Success.", contests });
+            return res.status(200).json({ contests: contestsData });
         } catch (e) {
-            return res.status(500).json({ message: e.message, contests: null })
+            return res.status(500).json({ message: e.message })
         }
     }
+
     static async edit(req, res) {
-        let { privilege } = req.decoded;
-        if (privilege != 'admin')
-            return res.status(401).json({ message: "Not allowed.", contest: null });
         try {
-            let { _id, name, memberPerTeam, maxTeam, img, pricePerStundent, registrationStatus } = req.value.body;
-            await ContestModel.findByIdAndUpdate({ _id }, { name, memberPerTeam, maxTeam, img, pricePerStundent, registrationStatus });
-            return res.status(200).json({ message: "Success" });
+            let { _id, name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus } = req.value.body;
+
+            await ContestModel.exists({ _id }, async function (err, result) {
+                if (!result) return res.status(404).json({ message: "Contest not found" });
+                await ContestModel.findByIdAndUpdate({ _id },
+                    { name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
+                let contest = await ContestModel.findById(_id);
+                return res.status(200).json({ contest });
+            })
         } catch (e) {
-            return res.status(500).json({ message: "Failed" });
+            return res.status(500).json({ message: e.message });
         }
     }
+
     static async delete(req, res) {
-        let { privilege } = req.decoded;
-        if (privilege != 'admin')
-            return res.status(401).json({ message: "Not allowed.", contest: null });
         try {
-            let { _id } = req.params,
-                contest = await ContestModel.findByIdAndDelete({ _id });
-            return res.status(200).json({ message: "Success", contest });
+            let { contestId } = req.params;
+
+            await ContestModel.exists({ _id: contestId }, async function (err, result) {
+                if (!result) return res.status(404).json({ message: "Contest not found" });
+                // TODO: check there is already team that is final or not
+                // TODO: update contest id in all team
+                await ContestModel.findByIdAndDelete(contestId);
+                return res.status(200).json({ message: "Contest deleted" });
+            })
         } catch (e) {
-            return res.status(500).json({ message: "Failed", contest: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 }
