@@ -1300,12 +1300,6 @@ paths:
             type: boolean
             default: false
           description: Set to true to populate the student
-        - in: query
-          name: populateTeacher
-          schema:
-            type: boolean
-            default: false
-          description: Set to true to populate the teacher
       tags:
       - Team
       security:
@@ -1328,7 +1322,7 @@ paths:
           $ref: '#/components/responses/TeamNotFound'
     delete:
       summary: Delete team
-      description: Delete team. Cannot delete team that is final. If not admin, admin then they only can delete team in the same school
+      description: Delete team. Cannot delete team that is final. If not admin, then they only can delete team in the same school
       security:
       - bearerAuth: []
       tags:
@@ -1399,7 +1393,7 @@ paths:
   /teams/excel/contest/{contestId}:
     get:
       summary: Generate excel
-      description: Generate excel file from contest data
+      description: Generate excel file from contest data. Admin only
       tags:
         - Team
       parameters:
@@ -1409,6 +1403,8 @@ paths:
             type: string
           description: Contest ID that you want to create the excel file for
           required: true
+      security: 
+        - bearerAuth: []
       responses:
         '200':
           description: OK, returns an excel file
