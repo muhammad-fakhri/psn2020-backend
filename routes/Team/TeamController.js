@@ -39,7 +39,7 @@ class TeamController {
         try {
             let { privilege } = req.decoded;
             let { school, contest, populateContest, populateStudent } = req.query;
-
+            
             // if no parameter is used
             if (!school && !contest) {
                 if (privilege !== 'admin') {
@@ -54,8 +54,8 @@ class TeamController {
                     // if not exist return empty array
                     if (!result) return res.status(200).json({ teams });
                     teams = await TeamModel.find({ school })
-                        .populate((populateContest == 1 ? 'contest' : ''))
-                        .populate((populateStudent == 1 ? 'students' : ''));
+                        .populate((populateContest === 'true' ? 'contest' : ''))
+                        .populate((populateStudent === 'true' ? 'students' : ''));
                     return res.status(200).json({ teams });
                 });
             } else if (contest) {
@@ -64,14 +64,14 @@ class TeamController {
                     // if not exist return empty array
                     if (!result) return res.status(200).json({ teams });
                     teams = await TeamModel.find({ contest })
-                        .populate((populateContest == 1 ? 'contest' : ''))
-                        .populate((populateStudent == 1 ? 'students' : ''));
+                        .populate((populateContest === 'true' ? 'contest' : ''))
+                        .populate((populateStudent === 'true' ? 'students' : ''));
                     return res.status(200).json({ teams });
                 });
             } else {
                 teams = await TeamModel.find({})
-                    .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'students' : ''));
+                    .populate((populateContest === 'true' ? 'contest' : ''))
+                    .populate((populateStudent === 'true' ? 'students' : ''));
                 return res.status(200).json({ teams });
             }
         } catch (e) {
@@ -81,13 +81,29 @@ class TeamController {
 
     static async get(req, res) {
         try {
-            let { _id } = req.params, { populateContest, populateStudent } = req.query,
-                team = await TeamModel.findById({ _id })
-                    .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'student' : ''));
-            return res.status(200).json({ message: "Success", team });
+            let { teamId } = req.params,
+                { sub, privilege } = req.decoded,
+                { populateContest, populateStudent } = req.query;
+
+            await TeamModel.exists({ _id: teamId }, async function (err, result) {
+                if (!result) {
+                    return res.status(404).json({ message: "Team not found" });
+                }
+
+                let team = await TeamModel.findById(teamId)
+                    .populate((populateContest === 'true' ? 'contest' : ''))
+                    .populate((populateStudent === 'true' ? 'students' : ''));
+
+                if (privilege === "school") {
+                    if (sub != team.school) {
+                        return res.status(403).json({ message: "You do not have access to this resource" });
+                    }
+                }
+
+                return res.status(200).json({ team });
+            });
         } catch (e) {
-            return res.status(500).json({ message: e.message, team: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
