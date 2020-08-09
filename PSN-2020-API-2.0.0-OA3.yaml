@@ -417,9 +417,67 @@ paths:
                 Old password wrong:
                   value:
                     message: Change password fail, your old password is wrong
+  /admin/create:
+    post:
+      summary: Create Subadmin
+      description: |  
+        Create new subadmin, only usable by super admin  
+        Password conditions:
+        * alphanumeric
+        * min 8 character
+        * there is must be a number
+      tags: 
+      - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminWithPassword'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Create subadmin Success, then you can login using new admin account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admin:
+                    $ref: '#/components/schemas/AdminWithId'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Create subadmin fail, not a super admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create subadmin fail, you are not a super admin
+                required:
+                  - message
+        '409':
+          description: Create subadmin fail, email already exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create subadmin fail, email already exist
+                required:
+                  - message
   /admin/delete:
     post:
       summary: Delete Subadmin
+      description: Delete subadmin, only super admin can use this endpoint
       tags:
         - Admin
       requestBody:
@@ -432,35 +490,26 @@ paths:
                 email:
                   type: string
                   example: muhammadfakhri@gmail.com
-                password:
-                  type: string
-                  example: passwordhehe
               required:
                 - email
-                - password
       responses:
         '200':
-          description: Admin Login Success  
+          description: Subadmin Deleted
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  admin:
-                    $ref: '#/components/schemas/AdminWithId'
-                  token:
-                    type: string
-                    description: JWT Token
-                required:
-                  - message
-                  - admin
-                  - token
+                allOf:
+                  -  $ref: '#/components/schemas/Message'
+                  - example:
+                      message: Subadmin deleted
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/LoginFail'
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Login failed, email not found
+          description: Delete subadmin failed, email not found
           content:
             application/json:
               schema:
@@ -468,7 +517,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Login failed, email not found
+                    example: Delete subadmin failed, email not found
                 required:
                   - message
   /auth/login/admin:
@@ -523,63 +572,6 @@ paths:
                   message:
                     type: string
                     example: Login failed, email not found
-                required:
-                  - message
-  /auth/registration/admin:
-    post:
-      summary: Admin Registration
-      description: |  
-        Register new admin, only usable by super admin  
-        Password conditions:
-        * alphanumeric
-        * min 8 character
-        * there is must be a number
-      tags: 
-      - Auth
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AdminWithPassword'
-      security:
-        - bearerAuth: []
-      responses:
-        '201':
-          description: Admin Registration Success, then you can login using new admin account
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  admin:
-                    $ref: '#/components/schemas/AdminWithId'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Admin Register fail, not a super admin
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Admin Register fail, you are not a super admin
-                required:
-                  - message
-        '409':
-          description: Admin Register fail, email already exist
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Admin Register fail, email already exist
                 required:
                   - message
   /contest:
