@@ -1,11 +1,11 @@
 const nodemailer = require('nodemailer');
 const transport = {
-    host: "smtp.mailtrap.io",
-    port: 587,
+    host: process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
     secure: false, // true for 465, false for other ports
     auth: {
-        user: 'ffe5397366b1e1',
-        pass: '5d0ef7a12c3b97',
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
     },
 };
 
@@ -24,7 +24,7 @@ class Mail {
                 <h2>Hello ${name}</h2>
                 <h3>Thank you for registering at PSN 2020<h3> 
                 <p>Before you can continue please verify your email first by clicking the link below.</p>
-                <a target="_blank" href="http://localhost:3000/auth/email/verify?email=${email}&token=${token}">Click this link to verify your email</a>
+                <a target="_blank" href="${process.env.BASE_URL}/auth/email/verify?email=${email}&token=${token}">Click this link to verify your email</a>
             `,
         });
     }
@@ -44,7 +44,7 @@ class Mail {
                 <h2>Hello ${name}</h2>
                 <h3>You are requesting a password reset<h3> 
                 <p>You can reset your password by clicking the link below</p>
-                <a target="_blank" href="http://localhost:3000?email=${email}&token=${token}">Click this link to reset your password</a>
+                <a target="_blank" href="${process.env.BASE_URL}?email=${email}&token=${token}">Click this link to reset your password</a>
             `,
         });
     }
