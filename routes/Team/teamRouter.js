@@ -4,8 +4,8 @@ let express = require('express'),
     { validateBody, schemas } = require('./TeamValidation'),
     JWtController = require('../JWT/JWTController');
 
-router.get('/count/:school', JWtController.checkToken, TeamController.count);
-router.get('/excel/contest/:contest', TeamController.getExcelByContest);
+router.get('/count', JWtController.checkToken, JWtController.isAdmin, TeamController.count);
+router.get('/excel/contest/:contest', JWtController.checkToken, JWtController.isAdmin, TeamController.getExcelByContest);
 router.get('/:teamId', JWtController.checkToken, TeamController.get);
 router.delete('/:teamId', JWtController.checkToken, TeamController.delete);
 router.get('/', JWtController.checkToken, TeamController.list);

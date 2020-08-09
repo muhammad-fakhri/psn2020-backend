@@ -214,11 +214,10 @@ class TeamController {
 
     static async count(req, res) {
         try {
-            let { school } = req.params,
-                totalTeams = await TeamModel.count({ school });
+            let totalTeams = await TeamModel.estimatedDocumentCount();
             return res.status(200).json({ totalTeams });
         } catch (e) {
-            return res.status(400).json({ message: e.message, totalTeams: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
