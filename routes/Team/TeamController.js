@@ -1,7 +1,8 @@
-let TeamModel = require('./TeamModel');
-let ContestModel = require('../Contest/ContestModel');
-let StudentModel = require('../Student/StudentModel');
-let ExcelJS = require('exceljs');
+const TeamModel = require('./TeamModel');
+const ContestModel = require('../Contest/ContestModel');
+const StudentModel = require('../Student/StudentModel');
+const SchoolModel = require('../School/SchoolModel');
+const ExcelJS = require('exceljs');
 
 class TeamController {
     static async create(req, res) {
@@ -36,23 +37,45 @@ class TeamController {
 
     static async list(req, res) {
         try {
-            let { school, contest, populateContest, populateStudent } = req.query, teams = null;
+            let { privilege } = req.decoded;
+            let { school, contest, populateContest, populateStudent } = req.query;
+
+            // if no parameter is used
+            if (!school && !contest) {
+                if (privilege !== 'admin') {
+                    return res.status(403).json({ message: "You do not have access to this resource" });
+                }
+            }
+
+            let teams = new Array();
             if (school) {
-                teams = await TeamModel.find({ school })
-                    .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'student' : ''));
+                // check school is exist or not
+                await SchoolModel.exists({ _id: school }, async function (err, result) {
+                    // if not exist return empty array
+                    if (!result) return res.status(200).json({ teams });
+                    teams = await TeamModel.find({ school })
+                        .populate((populateContest == 1 ? 'contest' : ''))
+                        .populate((populateStudent == 1 ? 'students' : ''));
+                    return res.status(200).json({ teams });
+                });
             } else if (contest) {
-                teams = await TeamModel.find({ contest })
-                    .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'student' : ''));
+                // check contest is exist or not
+                await ContestModel.exists({ _id: contest }, async function (err, result) {
+                    // if not exist return empty array
+                    if (!result) return res.status(200).json({ teams });
+                    teams = await TeamModel.find({ contest })
+                        .populate((populateContest == 1 ? 'contest' : ''))
+                        .populate((populateStudent == 1 ? 'students' : ''));
+                    return res.status(200).json({ teams });
+                });
             } else {
                 teams = await TeamModel.find({})
                     .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'student' : ''));
+                    .populate((populateStudent == 1 ? 'students' : ''));
+                return res.status(200).json({ teams });
             }
-            return res.status(200).json({ message: "Success", teams });
         } catch (e) {
-            return res.status(500).json({ message: e.message, teams: null });
+            return res.status(500).json({ message: e.message });
         }
     }
 
