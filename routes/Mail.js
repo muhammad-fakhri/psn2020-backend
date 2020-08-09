@@ -24,7 +24,7 @@ class Mail {
                 <h2>Hello ${name}</h2>
                 <h3>Thank you for registering at PSN 2020<h3> 
                 <p>Before you can continue please verify your email first by clicking the link below.</p>
-                <a target="_blank" href="http://localhost:3000/auth/email/verify?email=${email}&token=${token}">Click this link to verify your email</a>
+                <a target="_blank" href="${process.env.BASE_URL}/auth/email/verify?email=${email}&token=${token}">Click this link to verify your email</a>
             `,
         });
     }
@@ -44,7 +44,7 @@ class Mail {
                 <h2>Hello ${name}</h2>
                 <h3>You are requesting a password reset<h3> 
                 <p>You can reset your password by clicking the link below</p>
-                <a target="_blank" href="http://localhost:3000?email=${email}&token=${token}">Click this link to reset your password</a>
+                <a target="_blank" href="${process.env.BASE_URL}?email=${email}&token=${token}">Click this link to reset your password</a>
             `,
         });
     }

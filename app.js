@@ -1,3 +1,4 @@
+require('dotenv').config({ path: __dirname + '/.env' });
 let express = require('express');
 let path = require('path');
 let cookieParser = require('cookie-parser');
