@@ -1142,7 +1142,9 @@ paths:
       summary: List team
       description: |
         Get list team  
-        Choose one between school parameter or contest parameter, they cannot be used together. If no parameters are used, it will return the entire list of teams in the database (admin only)
+        Choose one between school parameter or contest parameter, they cannot be used together.  
+        If no parameters are used, it will return the entire list of teams in the database (admin only)  
+        If school and contest parameter used together, the result is only the team based on the school parameter is returned
       security:
       - bearerAuth: []
       tags:
@@ -1170,12 +1172,6 @@ paths:
           type: boolean
           default: false
         description: Populate student data
-      - in: query
-        name: populateTeacher
-        schema:
-          type: boolean
-          default: false
-        description: Populate teacher data
       responses:
         '200':
           description: OK
@@ -1192,12 +1188,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '404':
-          description: Data for School ID or contest ID used as parameter was not found. 
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
     post:
       summary: Create team
       description: Create new team. Only user can use this endpoint.
@@ -1227,6 +1217,20 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Contest is not available
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+              examples:
+                Quota Full:
+                  value:
+                    message: Contest quota is full
+                Registration Closed:
+                  value:
+                    message: Contest registration is closed
     put:
       summary: Update team
       description: | 
