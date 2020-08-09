@@ -694,6 +694,15 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/ContestNotFound'
+        '409':
+          description: Contest delete fail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                  - example:
+                      message: Delete contest fail, there are already team that is final
   /school/detail:
     get:
       summary: Get user detail 
@@ -1225,6 +1234,9 @@ paths:
                 Registration Closed:
                   value:
                     message: Contest registration is closed
+                Some Student already in a team:
+                  value:
+                    message: Create team fail, some student already in a team
     put:
       summary: Update team
       description: | 
