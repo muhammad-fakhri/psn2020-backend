@@ -12,7 +12,7 @@ class TeamController {
 
             // Check contest quota
             let contestData = await ContestModel.findById({ _id: contest });
-            let registeredTeam = await TeamModel.count({ contest });
+            let registeredTeam = await TeamModel.countDocuments({ contest });
             if (registeredTeam >= contestData.maxTeam) {
                 return res.status(409).json({ message: "Contest quota is full" })
             }
@@ -190,28 +190,6 @@ class TeamController {
         }
     }
 
-    static async populatedTeams(teams) {
-        let populatedTeams = [];
-        for (let i = 0; i < teams.length; i++) {
-            let temp = await TeamModel.findById({ _id: teams[i] }).populate('contest', 'pricePerStudent');
-            populatedTeams.push(temp);
-        }
-        return populatedTeams;
-    }
-
-    static async findBySchool(school, populate) {
-        try {
-            let teams = null;
-            if (populate) {
-                teams = await TeamModel.find({ school, isPaid: { $ne: true } }).populate(populate);
-            }
-            return teams;
-        }
-        catch (e) {
-            throw e;
-        }
-    }
-
     static async count(req, res) {
         try {
             let totalTeams = await TeamModel.estimatedDocumentCount();
@@ -221,34 +199,20 @@ class TeamController {
         }
     }
 
-    static async getUnpaid(req, res) {
-        try {
-            let { school } = req.params, { populateContest, populateStudent } = req.query,
-                teams = await TeamModel.find({ school, isPaid: false })
-                    .populate((populateContest == 1 ? 'contest' : ''))
-                    .populate((populateStudent == 1 ? 'student' : ''));
-            // console.log(school)
-            return res.status(200).json({ teams });
-        } catch (e) {
-            return res.status(400).json({ message: e.message });
-        }
-    }
-
     static async getExcelByContest(req, res) {
         try {
-            let { contest } = req.params;
-            contest = await ContestModel.findById({ _id: contest });
-            let participants = await TeamModel.find({ contest: contest._id }).populate({
-                path: "student school",
+            let { contestId } = req.params,
+                contest = await ContestModel.findById(contestId);
+            let teams = await TeamModel.find({ contest: contest._id }).populate({
+                path: "students school",
             });
 
             // Create Excel
             let workbook = new ExcelJS.Workbook();
-            workbook.properties
+            // workbook.properties.;
             let worksheet = workbook.addWorksheet(contest.name);
             worksheet.columns = [
                 { header: 'No', key: 'no', width: 4 },
-                // {header: 'Id', key: '_id', width: 10},
                 { header: 'Tim', key: 'team', width: 15 },
                 { header: 'Nama Siswa', key: 'name', width: 15 },
                 { header: 'Email', key: 'email', width: 15 },
@@ -257,51 +221,40 @@ class TeamController {
                 { header: 'Nama Lomba', key: 'contestName', width: 15 },
                 { header: 'Status Pembayaran', key: 'isPaid', width: 15 },
             ]
-            // return res.json({participants});
+
             let no = 1;
-            for (let i = 0; i < participants.length; i++) {
-                for (let j = 0; j < participants[i].student.length; j++, no++) {
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = 0; j < teams[i].students.length; j++, no++) {
                     worksheet.addRow([
                         no,
-                        // participants[i]._id,
-                        participants[i].name,
-                        participants[i].student[j].name,
-                        participants[i].student[j].email,
-                        participants[i].student[j].phone,
-                        participants[i].school.name,
+                        teams[i].name,
+                        teams[i].students[j].name,
+                        teams[i].students[j].email,
+                        teams[i].students[j].phone,
+                        teams[i].school.name,
                         contest.name,
-                        participants[i].isPaid2,
+                        (teams[i].isPaid ? 'Sudah' : 'Belum'),
                     ])
                     worksheet.commit;
                 }
             }
+
             let fileName = contest.name + " " + new Date().toISOString().split("T")[0] + '.xlsx';
-            let tempFilePath = __dirname + '/' + fileName;
+            let tempFilePath = process.cwd() + '/public/' + fileName;
             workbook.xlsx.writeFile(tempFilePath).then(() => {
-                console.log("done");
                 res.setHeader('Content-Disposition', 'attachment; filename=' + fileName);
-                res.sendFile(tempFilePath, (e) => {
-                    console.log(e);
+                res.sendFile(tempFilePath, (err) => {
+                    if (err) {
+                        next(err)
+                    } else {
+                        console.log('Sent:', fileName)
+                    }
                 })
             })
-            // return res.json({workbook});
-            // worksheet.commit();
-
-            // await this.sendWorkbook(workbook,res);
         } catch (e) {
-            return res.json({ message: e.message })
+            return res.status(500).json({ message: e.message })
         }
     }
-    // static async sendWorkbook(workbook, response) { 
-    //     var fileName = 'FileName.xlsx';
-
-    //     response.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    //     response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-
-    //      await workbook.xlsx.write(response);
-
-    //     response.end();
-    // }
 }
 
 module.exports = TeamController;

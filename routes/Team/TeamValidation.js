@@ -25,9 +25,6 @@ module.exports = {
             name: joi.string().required(),
             contest: joi.string().required(),
             students: joi.array().required(),
-        }),
-        delete: joi.object().keys({
-            _id: joi.string().required(),
-        }),
+        })
     }
 }
