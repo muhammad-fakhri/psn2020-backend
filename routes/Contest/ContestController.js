@@ -1,5 +1,6 @@
-let ContestModel = require('./ContestModel');
-let TeamModel = require('../Team/TeamModel');
+const ContestModel = require('./ContestModel');
+const TeamModel = require('../Team/TeamModel');
+const StudentModel = require('../Student/StudentModel');
 
 class ContestController {
     static async create(req, res) {
@@ -51,8 +52,26 @@ class ContestController {
 
             await ContestModel.exists({ _id: contestId }, async function (err, result) {
                 if (!result) return res.status(404).json({ message: "Contest not found" });
-                // TODO: check there is already team that is final or not
-                // TODO: update contest id in all team
+
+                let teams = await TeamModel.find({ contest: contestId });
+                console.log(teams);
+
+                // check there is already team that is final or not
+                for (let index = 0; index < teams.length; index++) {
+                    if (teams[index].isFinal) {
+                        return res.status(409).json({ message: "Delete contest fail, there are already team that is final" });
+                    }
+                }
+
+                // delete all team in the contest and update team id in each student data
+                for (let i = 0; i < teams.length; i++) {
+                    for (let j = 0; j < teams[i].students.length; j++) {
+                        await StudentModel.findByIdAndUpdate(teams[i].students[j], { team: null });
+                    }
+                    // delete team
+                    await teams[i].remove();
+                }
+
                 await ContestModel.findByIdAndDelete(contestId);
                 return res.status(200).json({ message: "Contest deleted" });
             })

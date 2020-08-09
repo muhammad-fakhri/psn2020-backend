@@ -1,6 +1,7 @@
 const StudentModel = require('./StudentModel');
 const SchoolModel = require("../School/SchoolModel");
-const { func } = require('joi');
+const TeamModel = require("../Team/TeamModel");
+
 class SchoolController {
     static async create(req, res) {
         try {
@@ -57,11 +58,10 @@ class SchoolController {
                     }
                 }
 
-                // check student already final or not
-                // TODO: check this is working or not
+                // check student's team already final or not
                 if (student.team) {
-                    student.populate('team');
-                    if (student.team.isFinal) {
+                    let team = await TeamModel.findById(student.team);
+                    if (team.isFinal) {
                         return res.status(409).json({ message: 'Update student fail, student data with the given ID already final' });
                     }
                 }
@@ -97,10 +97,9 @@ class SchoolController {
                 }
 
                 // check student already final or not
-                // TODO: check this is working or not
                 if (student.team) {
-                    student.populate('team');
-                    if (student.team.isFinal) {
+                    let team = await TeamModel.findById(student.team);
+                    if (team.isFinal) {
                         return res.status(409).json({ message: 'Delete student fail, student data with the given ID already final' });
                     }
                 }

@@ -21,7 +21,13 @@ class TeamController {
                 return res.status(409).json({ message: "Contest registration is closed" })
             }
 
-            // TODO: check student, are they already in a team or not
+            // check student, are they already in a team or not
+            for (let index = 0; index < students.length; index++) {
+                let student = await StudentModel.findById(students[index]);
+                if (student.team) {
+                    return res.status(409).json({ message: "Create team fail, some student already in a team" })
+                }
+            }
 
             // create team
             let team = await TeamModel.create({ name, contest, school: sub, students });

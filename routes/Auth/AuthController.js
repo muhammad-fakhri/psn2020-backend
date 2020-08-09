@@ -114,11 +114,15 @@ class AuthController {
                         let token = JWTController.signTokenToSchool(school);
 
                         // TODO: redirect to front end "Email Verified Page"
-                        // TODO: remove unneccesary information first before return it"
+
+                        // remove unneccesary information first before return it
+                        let schoolData = school.toObject();
+                        delete schoolData.verifyEmailToken;
+                        delete schoolData.verifyEmailDate;
 
                         return res.status(200).json({
                             message: 'Email verified, login success',
-                            school,
+                            school: schoolData,
                             token
                         });
                     } else {
