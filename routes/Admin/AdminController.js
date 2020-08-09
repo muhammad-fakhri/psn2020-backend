@@ -1,20 +1,27 @@
 let AdminModel = require('./AdminModel');
 
 class AdminController {
-    constructor(params) {
-
-    }
-    static async create(name, email, password) {
+    static async createSubadmin(req, res) {
         try {
-            return await AdminModel.create({ name, email, password });
-        } catch (e) {
-            throw e;
-        }
+            let { name, email, password } = req.value.body;
 
-    }
-    static async login(email, password) {
-        let admin = await AdminModel.findOne({ email });
-        return await admin.isValidPassword(password);
+            // Make sure account doesn't already exist
+            AdminModel.findOne({ email }, async function (err, admin) {
+                // If admin already exist
+                if (admin) return res.status(409).json({ message: 'Create subadmin fail, email already exist' });
+
+                // If not exist, create admin account
+                let adminData = await AdminController.create(name, email, password);
+
+                // remove unnecessary information
+                adminData = adminData.toObject();
+                delete adminData.password;
+
+                return res.status(201).json({ admin: adminData });
+            })
+        } catch (e) {
+            return res.status(500).json({ message: e.message, admin: null, token: null });
+        }
     }
 }
 

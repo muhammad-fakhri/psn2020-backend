@@ -11,7 +11,6 @@ router.post('/login', validateBody(schemas.schoolLogin), AuthController.schoolLo
 router.post('/password/change', JWtController.checkToken, JWtController.isSchool, validateBody(schemas.changePassword), AuthController.changePassword);
 router.post('/password/forgot', validateBody(schemas.forgotPassword), AuthController.forgotPassword);
 router.post('/password/forgot/set', validateBody(schemas.setForgotPassword), AuthController.setForgotPassword);
-router.post('/registration/admin', JWtController.checkToken, JWtController.isSuperAdmin, validateBody(schemas.adminRegistration), AuthController.adminRegistration);
 router.post('/registration', validateBody(schemas.schoolRegistration), AuthController.schoolRegistration);
 
 module.exports = router;
