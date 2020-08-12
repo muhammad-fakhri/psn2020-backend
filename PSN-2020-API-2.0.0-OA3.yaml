@@ -474,6 +474,86 @@ paths:
                     example: Create subadmin fail, email already exist
                 required:
                   - message
+  /admin/create-super:
+    post:
+      summary: Create Super Admin
+      description: |  
+        Create super admin, only one superadmin can be created.
+        Password conditions:
+        * alphanumeric
+        * min 8 character
+        * there is must be a number
+      tags: 
+      - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AdminWithPassword'
+                - type: object
+                  properties:
+                    secret:
+                      description: Secret for creating super admin
+                      type: string
+                  required:
+                    - secret
+                    - isSuperAdmin
+            example:
+              name : Super Admin
+              email: superadmin@psn.id
+              isSuperAdmin: true
+              password: paswordhhaada
+              secret: inirahasianya
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Create super admin Success, then you can login using new admin account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admin:
+                    allOf:
+                      - $ref: '#/components/schemas/AdminWithId'
+                      - example:
+                          _id: asdasdasd
+                          name: Super Admin
+                          email: superadmin@psn.id
+                          isSuperAdmin: true
+                required:
+                  - admin
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Create super admin fail, there are already one super admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create super admin fail, there are already one super admin
+                required:
+                  - message
+        '409':
+          description: Create super admin fail, email already exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create super admin fail, email already exist
+                required:
+                  - message
   /admin/delete:
     post:
       summary: Delete Subadmin
