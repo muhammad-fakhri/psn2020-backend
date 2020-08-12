@@ -54,24 +54,31 @@ class AdminController {
         }
     }
 
-    // NEVER UNCOMMENT THIS METHOD
-    // THIS METHOD ONLY FOR DEVELOPMENT AND FIRST DEPLOY
-    // static async createSuperadmin(req, res) {
-    //     try {
-    //         let { name, email, password, isSuperAdmin } = req.value.body;
-    //         // Make sure account doesn't already exist
-    //         AdminModel.findOne({ email }, async function (err, admin) {
-    //             // If admin already exist
-    //             if (admin) return res.status(409).json({ message: 'Create superadmin fail, email already exist' });
-    //             // If not exist, create admin account
-    //             await AdminModel.create({ name, email, password, isSuperAdmin });
-    //             return res.status(201).json({ message: 'Create superadmin success' });
-    //         })
-    //     } catch (e) {
-    //         return res.status(500).json({ message: e.message });
-    //     }
-    // }
-    // | ---------------------- |
+    static async createSuperadmin(req, res) {
+        try {
+            let { name, email, password, isSuperAdmin, secret } = req.value.body;
+            const secretPass = "#$p3st4Sa!nsn4s10n4l$*";
+            if (secret !== secretPass) {
+                return res.status(401).json({ message: 'Create super admin fail, secret does not match' });
+            }
+
+            let result;
+
+            // Make sure there are only one super admin created
+            result = await AdminModel.exists({ isSuperAdmin: true });
+            if (result) return res.status(403).json({ message: 'Create super admin fail, there are already one super admin' });
+
+            // Make sure account doesn't already exist
+            result = await AdminModel.exists({ email });
+            if (result) return res.status(409).json({ message: 'Create super admin fail, email already exist' });
+
+            // If not exist, create admin account
+            await AdminModel.create({ name, email, password, isSuperAdmin: true });
+            return res.status(201).json({ message: 'Create super admin success' });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
+        }
+    }
 }
 
 module.exports = AdminController;
