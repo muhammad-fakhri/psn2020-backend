@@ -840,8 +840,8 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
     put:
-      summary: Update user detail 
-      description: Update detail of user profile. Only usable by user
+      summary: Update user/school detail 
+      description: Update detail of user/school profile.
       security:
         - bearerAuth: []
       tags:
@@ -850,7 +850,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/School'
+              allOf:
+                - type: object
+                  properties:
+                    schoolId:
+                      type: string
+                - $ref: '#/components/schemas/School'
       responses:
         '200':
           description: Data updated
@@ -888,7 +893,7 @@ paths:
                   schools:
                     type: array
                     items:
-                      $ref: '#/components/schemas/SchoolWithId'
+                      $ref: '#/components/schemas/SchoolFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -962,11 +967,14 @@ paths:
                     schoolId:
                       type: string
                       example: adjasdahdasbdkas
-                - type: array
+                - type: object
                   description: Array of school ID, for multiple deletion
-                  items:
-                    type: string
-                    example: asdnajdnakda
+                  properties:
+                    schoolIds:
+                      type: array
+                      items:
+                        type: string
+                        example: adandka
       responses:
         '200':
           description: OK
@@ -984,6 +992,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/SchoolNotFound'
   /schools/detail/{schoolId}:
     get:
       summary: Get school detail by Id
@@ -1747,6 +1757,16 @@ components:
               type: string
               format: password
               example: passwordhehe
+          required:
+            - password
+    SchoolFull:
+      allOf:
+        - $ref: '#/components/schemas/SchoolWithId'
+        - type: object
+          properties:
+            password:
+              type: string
+              example: asdljansjdbasjdba
           required:
             - password
     Student:
