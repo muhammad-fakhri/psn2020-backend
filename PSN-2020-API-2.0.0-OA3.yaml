@@ -506,8 +506,6 @@ paths:
               isSuperAdmin: true
               password: paswordhhaada
               secret: inirahasianya
-      security:
-        - bearerAuth: []
       responses:
         '201':
           description: Create super admin Success, then you can login using new admin account
@@ -529,7 +527,17 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Create super admin fail, secret does not match
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create super admin fail, secret does not match
+                required:
+                  - message
         '403':
           description: Create super admin fail, there are already one super admin
           content:
