@@ -1075,7 +1075,7 @@ paths:
   /students:
     post:
       summary: Create student
-      description: Create new student. Only user can use this endpoint.
+      description: Create new student.
       security:
       - bearerAuth: []
       tags:
@@ -1085,7 +1085,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Student'
+              allOf:
+                - $ref: '#/components/schemas/Student'
+                - type: object
+                  properties:
+                    schoolId:
+                      type: string
+                      description: School ID
+                      example: asdajksdka
+                  required:
+                    - schoolId
       responses:
         '201':
           description: Student added
