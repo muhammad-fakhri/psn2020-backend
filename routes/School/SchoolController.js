@@ -5,7 +5,7 @@ const StudentModel = require('../Student/StudentModel');
 const bcrypt = require('bcryptjs');
 
 class SchoolController {
-    static async create(name, email, address, phone, password, verifyEmailToken) {
+    static async create(name, email, address, phone, province, password, verifyEmailToken) {
         try {
             // Make hashed password
             const salt = await bcrypt.genSalt(10);
@@ -16,6 +16,7 @@ class SchoolController {
                 email,
                 address,
                 phone,
+                province,
                 password: passwordHash,
                 verifyEmailToken
             });
@@ -35,7 +36,7 @@ class SchoolController {
 
     static async listAllSchools(req, res, next) {
         try {
-            let schools = await SchoolModel.find({}, '_id name email address phone isVerifiedEmail password');
+            let schools = await SchoolModel.find({}, '_id name email address phone province isVerifiedEmail password');
             return res.status(200).json({ schools });
         }
         catch (e) {
@@ -54,7 +55,7 @@ class SchoolController {
                 // if school not exist
                 if (!result) return res.status(404).json({ message: 'School not found' });
 
-                let school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
+                let school = await SchoolModel.findById(schoolId, '_id name email address phone province isVerifiedEmail');
                 return res.status(200).json({ school });
             })
         } catch (e) {
@@ -65,7 +66,7 @@ class SchoolController {
     static async getSchoolDetail(req, res) {
         try {
             let { sub } = req.decoded;
-            let school = await SchoolModel.findById(sub, '_id name email address phone isVerifiedEmail');
+            let school = await SchoolModel.findById(sub, '_id name email address phone province isVerifiedEmail');
             return res.status(200).json({ school });
         } catch (error) {
             return res.status(500).json({ message: error.message });
@@ -74,8 +75,8 @@ class SchoolController {
 
     static async updateSchoolDetail(req, res) {
         try {
-            let { schoolId, name, email, address, phone } = req.value.body;
-            let school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
+            let { schoolId, name, email, address, phone, province } = req.value.body;
+            let school = await SchoolModel.findById(schoolId, '_id name email address phone province isVerifiedEmail');
 
             school.name = name;
             school.email = email;
@@ -96,7 +97,7 @@ class SchoolController {
                 name: {
                     $regex: new RegExp(searchString, "ig")
                 }
-            }, '_id name email address phone isVerifiedEmail')
+            }, '_id name email address phone province isVerifiedEmail')
                 .sort({ name: 'asc' })
                 .skip(parseInt(skip) || 0)
                 .limit(parseInt(limit) || 10);

@@ -27,7 +27,8 @@ module.exports = {
             name: joi.string().required(),
             email: joi.string().email().required(),
             address: joi.string().required(),
-            phone: joi.string().required()
+            phone: joi.string().required(),
+            province: joi.string().required()
         }),
         deleteSchool: joi.alternatives().try(delete1, delete2)
     }

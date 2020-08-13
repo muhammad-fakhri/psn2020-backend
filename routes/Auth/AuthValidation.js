@@ -20,6 +20,7 @@ module.exports = {
             email: joi.string().email().required(),
             address: joi.string().required(),
             phone: joi.string().required(),
+            province: joi.string().required(),
             password: joi.string()
                 .required()
                 .alphanum()

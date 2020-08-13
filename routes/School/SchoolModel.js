@@ -20,6 +20,10 @@ let schoolSchema = new Schema({
     phone: {
         type: String
     },
+    province: {
+        type: String,
+        required: true
+    },
     password: {
         type: String,
         required: true

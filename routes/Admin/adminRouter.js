@@ -5,6 +5,7 @@ let express = require('express'),
     JWtController = require('../JWT/JWTController');
 
 router.get('/list', JWtController.checkToken, JWtController.isSuperAdmin, AdminController.listAllSubadmin);
+router.get('/chart-data', JWtController.checkToken, JWtController.isAdmin, AdminController.getChartData);
 router.post('/create-super', validateBody(schemas.createSuperadmin), AdminController.createSuperadmin);
 router.post('/create', JWtController.checkToken, JWtController.isSuperAdmin,
     validateBody(schemas.createSubadmin), AdminController.createSubadmin);

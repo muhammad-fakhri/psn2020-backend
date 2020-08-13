@@ -11,7 +11,7 @@ const Mail = require('../Mail');
 class AuthController {
     static async schoolRegistration(req, res) {
         try {
-            let { name, email, address, phone, password } = req.value.body;
+            let { name, email, address, phone, province, password } = req.value.body;
 
             // Make sure account doesn't already exist
             SchoolModel.findOne({ email }, async function (err, school) {
@@ -20,7 +20,7 @@ class AuthController {
 
                 // If not exist, create account
                 let verifyEmailToken = crypto.randomBytes(16).toString('hex');
-                let schoolData = await SchoolController.create(name, email, address, phone, password, verifyEmailToken);
+                let schoolData = await SchoolController.create(name, email, address, phone, province, password, verifyEmailToken);
 
                 // Send verification email
                 await Mail.sendVerifyEmail(name, email, verifyEmailToken);
@@ -52,7 +52,7 @@ class AuthController {
     static async schoolLogin(req, res) {
         try {
             let { email, password } = req.value.body;
-            SchoolModel.findOne({ email }, '_id name email address phone isVerifiedEmail', async function (err, school) {
+            SchoolModel.findOne({ email }, '_id name email address phone province isVerifiedEmail', async function (err, school) {
                 if (!school) {
                     return res.status(404).json({ message: 'Login failed, email not found' });
                 }
@@ -104,7 +104,7 @@ class AuthController {
             }
 
             SchoolModel.findOne({ email: req.query.email },
-                '_id name email address phone isVerifiedEmail verifyEmailToken verifyEmailDate',
+                '_id name email address phone province isVerifiedEmail verifyEmailToken verifyEmailDate',
                 function (err, school) {
                     // make sure account exist
                     if (!school) {

@@ -1,4 +1,8 @@
-let AdminModel = require('./AdminModel');
+const AdminModel = require('./AdminModel');
+const ContestModel = require('../Contest/ContestModel');
+const StudentModel = require('../Student/StudentModel');
+const TeamModel = require('../Team/TeamModel');
+const SchoolModel = require('../School/SchoolModel');
 
 class AdminController {
     static async login(email, password) {
@@ -81,12 +85,56 @@ class AdminController {
     }
 
     static async listAllSubadmin(req, res) {
-        let { privilege } = req.decoded;
-        if (privilege !== "admin") {
-            return res.status(403).json({ message: "You do not have access to this resource" });
+        try {
+            let { privilege } = req.decoded;
+            if (privilege !== "admin") {
+                return res.status(403).json({ message: "You do not have access to this resource" });
+            }
+            let admins = await AdminModel.find({ isSuperAdmin: false });
+            return res.status(200).json({ admins });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
         }
-        let admins = await AdminModel.find({ isSuperAdmin: false });
-        return res.status(200).json({ admins });
+    }
+
+    static async getChartData(req, res) {
+        // const sleep = ms => {
+        //     return new Promise((resolve) => {
+        //         setTimeout(resolve, ms);
+        //     });
+        // };
+
+        try {
+            let contests = await ContestModel.find({});
+            const student = new Array();
+            contests.forEach(async (contest) => {
+                await TeamModel.countDocuments({ contest: contest._id }, function (err, count) {
+                    student.push({
+                        "label": contest.name,
+                        "count": count
+                    });
+                });
+            });
+
+            const school = new Array();
+            let result = await SchoolModel.aggregate([
+                { $group: { _id: null, provinces: { $addToSet: "$province" } } }
+            ]);
+            for (let index = 0; index < result[0].provinces.length; index++) {
+                await SchoolModel.countDocuments({ province: result[0].provinces[index] }, function (err, count) {
+                    school.push({
+                        "label": result[0].provinces[index],
+                        "count": count
+                    });
+                });
+            }
+
+            // await sleep(2000); // sleep for 2 second
+
+            return res.status(200).json({ student, school });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
     }
 }
 
