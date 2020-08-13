@@ -1,12 +1,26 @@
 const ContestModel = require('./ContestModel');
 const TeamModel = require('../Team/TeamModel');
 const StudentModel = require('../Student/StudentModel');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 class ContestController {
     static async create(req, res) {
         try {
-            let { name, memberPerTeam, maxTeam, img, registrationStatus, pricePerStudent } = req.value.body,
-                contest = await ContestModel.create({ name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
+            let { name, memberPerTeam, maxTeam, registrationStatus, pricePerStudent } = req.value.body;
+
+            if (!req.files) return res.status(400).json({ "message": "Contest image not provided." });
+            let image = req.files.contestImage;
+            let extension = path.extname(image.name);
+            if (extension !== '.jpg' && extension !== '.png') {
+                return res.status(400).json({ "message": "Please use .jpg or .png image" });
+            }
+            image.name = uuidv4() + extension;
+            image.mv('./uploads/contest/' + image.name);
+            let imgPath = '/contest/' + image.name;
+
+            let contest = await ContestModel.create({ name, memberPerTeam, maxTeam, imgPath, pricePerStudent, registrationStatus });
             return res.status(201).json({ contest });
         } catch (e) {
             return res.status(500).json({ message: e.message })
@@ -30,15 +44,39 @@ class ContestController {
         }
     }
 
-    static async edit(req, res) {
+    static async update(req, res) {
         try {
-            let { _id, name, memberPerTeam, maxTeam, img, pricePerStudent, registrationStatus } = req.value.body;
+            let { _id, name, memberPerTeam, maxTeam, pricePerStudent, registrationStatus } = req.value.body;
 
             await ContestModel.exists({ _id }, async function (err, result) {
                 if (!result) return res.status(404).json({ message: "Contest not found" });
-                await ContestModel.findByIdAndUpdate({ _id },
-                    { name, memberPerTeam, maxTeam, imgPath: img, pricePerStudent, registrationStatus });
+
+                let image = null, imgPath = null;
+
                 let contest = await ContestModel.findById(_id);
+                if (req.files) {
+                    // upload new image
+                    image = req.files.contestImage;
+                    let extension = path.extname(image.name);
+                    if (extension !== '.jpg' && extension !== '.png') {
+                        return res.status(400).json({ "message": "Please use .jpg or .png image" });
+                    }
+                    image.name = uuidv4() + extension;
+                    image.mv('./uploads/contest/' + image.name);
+
+                    // delete old image
+                    fs.unlink(process.cwd() + '/uploads' + contest.imgPath, (err) => {
+                        if (err) console.log(err.message);;
+                    });
+                }
+
+                imgPath = (req.files ? '/contest/' + image.name : contest.imgPath);
+
+                await ContestModel.findByIdAndUpdate({ _id },
+                    { name, memberPerTeam, maxTeam, imgPath, pricePerStudent, registrationStatus });
+                contest = await ContestModel.findById(_id);
+                contest = contest.toObject()
+                contest.registeredTeam = await TeamModel.countDocuments({ contest: _id });
                 return res.status(200).json({ contest });
             })
         } catch (e) {
@@ -54,7 +92,6 @@ class ContestController {
                 if (!result) return res.status(404).json({ message: "Contest not found" });
 
                 let teams = await TeamModel.find({ contest: contestId });
-                console.log(teams);
 
                 // check there is already team that is final or not
                 for (let index = 0; index < teams.length; index++) {
@@ -72,6 +109,11 @@ class ContestController {
                     await teams[i].remove();
                 }
 
+                let contest = await ContestModel.findById(contestId);
+                // delete old image
+                fs.unlink(process.cwd() + '/uploads' + contest.imgPath, (err) => {
+                    if (err) console.log(err.message);;
+                });
                 await ContestModel.findByIdAndDelete(contestId);
                 return res.status(200).json({ message: "Contest deleted" });
             })

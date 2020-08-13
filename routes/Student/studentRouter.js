@@ -8,7 +8,7 @@ router.get('/available/:schoolId', JWtController.checkToken, StudentController.g
 router.get('/count/:schoolId', JWtController.checkToken, StudentController.count);
 router.get('/school/:schoolId', JWtController.checkToken, StudentController.listBySchool);
 router.delete('/:studentId', JWtController.checkToken, StudentController.delete);
-router.post('/', JWtController.checkToken, JWtController.isSchool, validateBody(schemas.create), StudentController.create);
+router.post('/', JWtController.checkToken, validateBody(schemas.create), StudentController.create);
 router.put('/', JWtController.checkToken, validateBody(schemas.update), StudentController.update);
 
 module.exports = router;

@@ -19,7 +19,8 @@ module.exports = {
             name: joi.string().required(),
             email: joi.string().email().required(),
             phone: joi.string().required(),
-            gender: joi.string().valid('male', 'female').required()
+            gender: joi.string().valid('male', 'female').required(),
+            schoolId: joi.string().required()
         }),
         update: joi.object().keys({
             _id: joi.string().required(),

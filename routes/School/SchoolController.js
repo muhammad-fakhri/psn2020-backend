@@ -1,4 +1,6 @@
 const SchoolModel = require('./SchoolModel');
+const TeamModel = require('../Team/TeamModel');
+const StudentModel = require('../Student/StudentModel');
 const bcrypt = require('bcryptjs');
 
 class SchoolController {
@@ -32,7 +34,7 @@ class SchoolController {
 
     static async listAllSchools(req, res, next) {
         try {
-            let schools = await SchoolModel.find({}, '_id name email address phone isVerifiedEmail');
+            let schools = await SchoolModel.find({}, '_id name email address phone isVerifiedEmail password');
             return res.status(200).json({ schools });
         }
         catch (e) {
@@ -71,9 +73,8 @@ class SchoolController {
 
     static async updateSchoolDetail(req, res) {
         try {
-            let { sub } = req.decoded;
-            let { name, email, address, phone } = req.value.body;
-            let school = await SchoolModel.findById(sub, '_id name email address phone isVerifiedEmail');
+            let { schoolId, name, email, address, phone } = req.value.body;
+            let school = await SchoolModel.findById(schoolId, '_id name email address phone isVerifiedEmail');
 
             school.name = name;
             school.email = email;
@@ -110,6 +111,51 @@ class SchoolController {
             return res.status(200).json({ totalSchool: count });
         } catch (e) {
             return res.status(500).json({ message: e.message });
+        }
+    }
+
+    static async deleteSchools(req, res) {
+        let { multiple } = req.query;
+        let schoolIds = null;
+        try {
+            if (multiple === "true") {
+                schoolIds = req.value.body.schoolIds;
+                for (let index = 0; index < schoolIds.length; index++) {
+                    await SchoolModel.exists({ _id: schoolIds[index] }, async function (err, result) {
+                        if (result) {
+                            // delete all team 
+                            await TeamModel.deleteMany({ school: schoolIds[index] });
+
+                            // delete all student
+                            await StudentModel.deleteMany({ school: schoolIds[index] });
+
+                            // delete school
+                            await SchoolModel.findByIdAndDelete(schoolIds[index]);
+                        }
+                    });
+                }
+
+                return res.status(200).json({ message: "Schools deleted" });
+            } else {
+                schoolIds = req.value.body.schoolId;
+                await SchoolModel.exists({ _id: schoolIds }, async function (err, result) {
+                    if (result) {
+                        // delete all team 
+                        await TeamModel.deleteMany({ school: schoolIds });
+
+                        // delete all student
+                        await StudentModel.deleteMany({ school: schoolIds });
+
+                        // delete school
+                        await SchoolModel.findByIdAndDelete(schoolIds);
+                        return res.status(200).json({ message: "School deleted" });
+                    } else {
+                        return res.status(404).json({ message: "School not found" });
+                    }
+                })
+            }
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
         }
     }
 }

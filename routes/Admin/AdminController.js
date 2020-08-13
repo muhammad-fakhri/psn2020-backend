@@ -79,6 +79,15 @@ class AdminController {
             return res.status(500).json({ message: e.message });
         }
     }
+
+    static async listAllSubadmin(req, res) {
+        let { privilege } = req.decoded;
+        if (privilege !== "admin") {
+            return res.status(403).json({ message: "You do not have access to this resource" });
+        }
+        let admins = await AdminModel.find({ isSuperAdmin: false });
+        return res.status(200).json({ admins });
+    }
 }
 
 module.exports = AdminController;

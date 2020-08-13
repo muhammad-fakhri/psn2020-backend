@@ -5,9 +5,14 @@ const TeamModel = require("../Team/TeamModel");
 class SchoolController {
     static async create(req, res) {
         try {
-            let { name, email, phone, gender } = req.value.body,
-                { sub } = req.decoded;
-            let student = await StudentModel.create({ name, email, phone, gender, school: sub });
+            let { name, email, phone, gender, schoolId } = req.value.body,
+                { sub, privilege } = req.decoded;
+
+            let school = null;
+            if (privilege == "school") school = sub;
+            else school = schoolId;
+
+            let student = await StudentModel.create({ name, email, phone, gender, school });
             return res.status(201).json({ student });
         } catch (e) {
             return res.status(500).json({ message: e.message });

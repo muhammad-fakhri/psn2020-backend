@@ -1,5 +1,12 @@
 let joi = require('joi');
 
+const delete1 = joi.object().keys({
+    schoolId: joi.string().required()
+});
+const delete2 = joi.object().keys({
+    schoolIds: joi.array().required()
+});
+
 module.exports = {
     validateBody: (schema) => {
         return (req, res, next) => {
@@ -16,10 +23,12 @@ module.exports = {
     },
     schemas: {
         updateSchoolDetail: joi.object().keys({
+            schoolId: joi.string().required(),
             name: joi.string().required(),
             email: joi.string().email().required(),
             address: joi.string().required(),
             phone: joi.string().required()
-        })
+        }),
+        deleteSchool: joi.alternatives().try(delete1, delete2)
     }
 }
