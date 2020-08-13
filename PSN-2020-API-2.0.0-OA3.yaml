@@ -164,24 +164,8 @@ paths:
           required: true
           description: Verify email token
       responses:
-        '200':
-          description: Email verified, then login user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Email verified, login success
-                  school:
-                    $ref: '#/components/schemas/SchoolWithId'
-                  token:
-                    type: string
-                    description: JWT Token
-                required:
-                  - message
-                  - school
+        '302':
+          description: Email verified, then redirect to frontend 'email verified' page
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -727,9 +711,18 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Contest'
+              allOf:
+                - $ref: '#/components/schemas/ContestWithoutImage'
+                - type: object
+                  properties:
+                    contestImage:
+                      type: string
+                      format: binary
+                      description: uploaded image for contest with field name of "contestImage". Must in .jpg or .png format
+                  required:
+                    - contestImage
       responses:
         '201':
           description: Contest created
@@ -740,12 +733,12 @@ paths:
                 properties:
                   contest:
                       $ref: '#/components/schemas/ContestFull'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/BadRequest'
     put:
       summary: Update contest
       description: Update contest. Only admin can use this endpoint.
@@ -756,9 +749,16 @@ paths:
       requestBody:
         required: true
         content:  
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ContestWithId'
+              allOf:
+                - $ref: '#/components/schemas/ContestWithoutImageWithId'
+                - type: object
+                  properties:
+                    contestImage:
+                      type: string
+                      format: binary
+                      description: uploaded image for contest with field name of "contestImage". Not required when updating contest. Must in .jpg or .png format
       responses:
         '200':
           description: Contest updated
@@ -1694,6 +1694,42 @@ components:
         - maxTeam
         - registrationStatus
         - pricePerStudent
+    ContestWithoutImage:
+      type: object
+      properties:
+        name:
+          type: string
+          example: CPSC
+        memberPerTeam:  
+          type: integer
+          example: 3
+        maxTeam: 
+          type: integer
+          example: 50
+        registrationStatus: 
+          type: string
+          enum:
+           - open
+           - close
+          default: close
+        pricePerStudent: 
+          type: integer
+          example: 100000
+      required:
+        - name
+        - memberPerTeam
+        - maxTeam
+        - registrationStatus
+        - pricePerStudent
+    ContestWithoutImageWithId:
+      allOf:
+        - type: object
+          properties:
+            _id: 
+              type: string
+          required:
+            - _id
+        - $ref: '#/components/schemas/ContestWithoutImage'
     ContestWithId:
       allOf:
         - type: object
