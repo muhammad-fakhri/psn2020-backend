@@ -1,4 +1,5 @@
 const SchoolModel = require('./SchoolModel');
+const SchoolNameModel = require('../Data/SchoolNameModel');
 const TeamModel = require('../Team/TeamModel');
 const StudentModel = require('../Student/StudentModel');
 const bcrypt = require('bcryptjs');
@@ -157,6 +158,15 @@ class SchoolController {
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
+    }
+
+    static async getListSchoolNames(req, res) {
+        let schoolNames = await SchoolNameModel.find({}, 'name').sort({ name: 'asc' });
+        const schoolNamesArray = new Array();
+        schoolNames.forEach(schoolName => {
+            schoolNamesArray.push(schoolName.name);
+        })
+        return res.status(200).json({ schools: schoolNamesArray });
     }
 }
 

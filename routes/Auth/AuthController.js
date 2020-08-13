@@ -3,6 +3,7 @@ const SchoolModel = require('../School/SchoolModel');
 const AdminModel = require('../Admin/AdminModel');
 const JWTController = require('../JWT/JWTController');
 const AdminController = require('../Admin/AdminController');
+const SchoolNameModel = require('../Data/SchoolNameModel');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const Mail = require('../Mail');
@@ -33,6 +34,12 @@ class AuthController {
                 delete schoolData.verifyEmailDate;
                 delete schoolData.createdAt;
                 delete schoolData.updatedAt;
+
+                // check school name already exist or not
+                let schoolName = await SchoolNameModel.findOne({ name: schoolData.name });
+                if (!schoolName) {
+                    await SchoolNameModel.create({ name: schoolData.name });
+                }
 
                 return res.status(201).json({ school: schoolData });
             })
