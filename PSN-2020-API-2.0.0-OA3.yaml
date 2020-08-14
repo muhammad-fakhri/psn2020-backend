@@ -1340,6 +1340,11 @@ paths:
           Can be filled with  
           * school ID, to display all student data in a school
           * "all", to display all student data in the database. (Only can be used by admin)
+      - in: query
+        name: populateSchool
+        schema:
+          type: boolean
+        description: Set "true" to populate school in student data
       responses:
         '200':
           description: OK
