@@ -21,8 +21,10 @@ module.exports = {
         }),
         update: joi.object().keys({
             paymentId: joi.string().required(),
-            status: joi.string().required()
+            status: joi.string().valid('waiting', 'paid').required()
         }),
-        
+        upload: joi.object().keys({
+            paymentId: joi.string().required()
+        }),
     }
 }
