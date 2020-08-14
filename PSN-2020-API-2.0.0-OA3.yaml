@@ -1237,6 +1237,42 @@ paths:
                     example: Update student fail, student data with the given ID already final
                 required:
                   - message
+  /students/delete:
+    post:
+      summary: Multiple Delete student
+      description: Delete multiple student data. Student data that are already final or paid can't be deleted  
+      security:
+      - bearerAuth: []
+      tags:
+        - Student
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentIds:
+                  type: array
+                  items:
+                    description: Array of student ID
+                    type: string
+                    example: asdbajd
+      responses:
+        '200':
+          description: Student deleted  
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'
+                  - example:
+                      message: Student data deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /students/{studentId}:
     delete:
       summary: Delete student
@@ -1654,7 +1690,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Team'
+              allOf: 
+                - $ref: '#/components/schemas/Team'
+                - type: object
+                  properties:
+                    schoolId:
+                      description: School ID
+                      type: string
+                      example: ajdbasjd
+                  required:
+                    - schoolId
       responses:
         '201':
           description: Team created
