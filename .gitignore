@@ -1,3 +1,6 @@
 node_modules/
 .env
-/uploads
+uploads/payment/*
+!uploads/payment/.keep
+uploads/contest/*
+!uploads/contest/.keep
