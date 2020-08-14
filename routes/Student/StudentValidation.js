@@ -28,6 +28,9 @@ module.exports = {
             email: joi.string().email().required(),
             phone: joi.string().required(),
             gender: joi.string().valid('male', 'female').required()
+        }),
+        delete: joi.object().keys({
+            studentIds: joi.array().required()
         })
     }
 }

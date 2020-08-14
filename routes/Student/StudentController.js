@@ -163,6 +163,28 @@ class SchoolController {
             return res.status(500).json({ message: e.message });
         }
     }
+
+    static async multipleDelete(req, res) {
+        try {
+            let { studentIds } = req.body;
+            for (let index = 0; index < studentIds.length; index++) {
+                let student = await StudentModel.findById(studentIds[index]);
+                if (student) {
+                    // check student already final or not
+                    if (student.team) {
+                        student.populate('team');
+                        if (!student.team.isFinal) {
+                            await student.remove();
+                        }
+                    }
+                    await student.remove();
+                }
+            }
+            return res.status(200).json({ message: "Student data deleted" });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
+        }
+    }
 }
 
 module.exports = SchoolController;
