@@ -1471,8 +1471,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  payment:
-                    $ref: '#/components/schemas/PaymentFull'
+                  message:
+                    type: string 
+                    example: Payment updated
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1502,7 +1503,7 @@ paths:
                   format: binary
               required:
                 - paymentId
-                - status
+                - paymentReceipt
       responses:
         '200':
           description: Payment Receipt Uploaded
@@ -1511,12 +1512,27 @@ paths:
               schema:
                 type: object
                 properties:
-                  payment:
-                    $ref: '#/components/schemas/PaymentFull'
+                  message:
+                    type: string
+                    example: Payment receipt uploaded
+                required:
+                  - message
+        '400':
+          description: Receipt Image Not Provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Payment receipt image is required
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PaymentNotFound'
   /payment/{paymentId}:
     get:
       summary: Get Payment Detail
