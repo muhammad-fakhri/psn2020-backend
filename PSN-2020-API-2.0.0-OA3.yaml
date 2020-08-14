@@ -1387,6 +1387,30 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404': 
           $ref: '#/components/responses/SchoolNotFound'
+  /payment:
+    post:
+      summary: Create payment
+      description: Create new payment for team registration. Only usable by user
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      responses:
+        '201':
+          description: Payment Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /teams:
     get:
       summary: List team
@@ -1966,6 +1990,12 @@ components:
             - isFinal
             - isPaid
             - school
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
         
   responses:
     BadRequest:
