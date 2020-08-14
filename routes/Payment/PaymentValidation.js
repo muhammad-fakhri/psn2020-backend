@@ -16,21 +16,13 @@ module.exports = {
     },
     schemas: {
         create: joi.object().keys({
-            type: joi.string().required(),
             school: joi.string().required(),
-            // teams: joi.array().required(),
-            // teachers: joi.array().required(),
+            teams: joi.array().required()
         }),
-        // edit: joi.object().keys({
-        //     _id: joi.string().required(),
-        //     name: joi.string().required(),
-        //     email: joi.string().email().required(),
-        //     phone: joi.string().required(),
-        //     NIP: joi.string().required(),
-        //     school: joi.string().required(),
-        // }),
-        // delete: joi.object().keys({
-        //     _id: joi.string().required(),
-        // }),
+        update: joi.object().keys({
+            paymentId: joi.string().required(),
+            status: joi.string().required()
+        }),
+        
     }
 }
