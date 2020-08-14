@@ -16,7 +16,7 @@ module.exports = {
     },
     schemas: {
         schoolRegistration: joi.object().keys({
-            name: joi.string().required(),
+            name: joi.string().min(6).max(50).required(),
             email: joi.string().email().required(),
             address: joi.string().required(),
             phone: joi.string().required(),

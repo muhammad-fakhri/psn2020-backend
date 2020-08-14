@@ -21,7 +21,10 @@ class SchoolController {
                 verifyEmailToken
             });
         } catch (e) {
-            return res.status(500).json({ message: e.message });
+            return {
+                error: true,
+                message: e.message
+            }
         }
     }
 

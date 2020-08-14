@@ -22,6 +22,11 @@ class AuthController {
                 let verifyEmailToken = crypto.randomBytes(16).toString('hex');
                 let schoolData = await SchoolController.create(name, email, address, phone, province, password, verifyEmailToken);
 
+                // if there is error when create new school
+                if (schoolData.error) {
+                    return res.status(400).json({ message: schoolData.message });
+                }
+
                 // Send verification email
                 await Mail.sendVerifyEmail(name, email, verifyEmailToken);
 
