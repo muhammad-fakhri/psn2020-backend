@@ -2,6 +2,10 @@ let mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 let paymentSchema = new Schema({
+    _id: {
+        type: Schema.Types.ObjectId,
+        required: true
+    },
     totalPrice: {
         type: Number,
         min: 0,
