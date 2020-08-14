@@ -1539,6 +1539,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PaymentNotFound'
   /teams:
     get:
       summary: List team
@@ -2280,15 +2282,15 @@ components:
               - $ref: '#/components/schemas/Message'
               - example:
                   message: Student data not found
-    TeacherNotFound:
-      description: Teacher data with the given ID was not found
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: '#/components/schemas/Message'
-              - example:
-                  message: Teacher data not found
+    # TeacherNotFound:
+    #   description: Teacher data with the given ID was not found
+    #   content:
+    #     application/json:
+    #       schema:
+    #         allOf:
+    #           - $ref: '#/components/schemas/Message'
+    #           - example:
+    #               message: Teacher data not found
     TeamNotFound:
       description: Team with the given ID was not found
       content:
@@ -2298,15 +2300,15 @@ components:
               - $ref: '#/components/schemas/Message'
               - example: 
                   message: Team not found
-    BookingNotFound:
-      description: Booking with the given ID was not found
+    PaymentNotFound:
+      description: Payment Not Found
       content:
         application/json:
           schema:
             allOf:
               - $ref: '#/components/schemas/Message'
               - example:
-                  message: Booking not found
+                  message: Payment not found
   securitySchemes:
     bearerAuth:            
       type: http
