@@ -35,7 +35,7 @@ class ContestController {
 
             for (let i = 0; i < contests.length; i++) {
                 let contest = contests[i].toObject();
-                contest.registeredTeam = await TeamModel.count({ contest: contest._id });
+                contest.registeredTeam = await TeamModel.countDocuments({ contest: contest._id });
                 contestsData.push(contest);
             }
             return res.status(200).json({ contests: contestsData });
