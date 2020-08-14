@@ -5,10 +5,8 @@ let PaymentEncription = require('../Midleware/PaymentEncription');
 let axios = require('axios');
 let mongoose = require('mongoose');
 // let cid = '00298', sck = '787b175aeb54a1e133fb71b5d2ebe11d'; // credential dev
-let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
+// let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
 let ParamModel = require('../Params/ParamModel');
-const e = require('express');
-const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
@@ -25,8 +23,13 @@ class PaymentController {
     static async getPaymentDetail(req, res) {
         let { paymentId } = req.params;
         try {
-            let payment = await PaymentModel.findById(paymentId);
-            return res.status(200).json({ payment });
+            await PaymentModel.exists({ _id: paymentId }, async (err, result) => {
+                if (!result) {
+                    return res.status(404).json({ message: "Payment not found" });
+                }
+                let payment = await PaymentModel.findById(paymentId);
+                return res.status(200).json({ payment });
+            })
         } catch (e) {
             return res.status(500).json({ message: e.message });
         }
@@ -40,13 +43,14 @@ class PaymentController {
                 sck = '61c16a7e0dab54a0709ad748f485951e',
                 trx_id = mongoose.Types.ObjectId();
 
-            // Generate virtual account
-            let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
-            let firstVA = Math.floor(1000 + Math.random() * 9000);
-            let virtual_account = "98800773" + firstVA.toString() + lastVA.value;
-            nextValue = (parseInt(lastVA.value) + 1).toString();
-            lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
-            lastVA.save();
+            // Generate virtual account number
+            // let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
+            // let firstVA = Math.floor(1000 + Math.random() * 9000);
+            // let virtual_account = "98800773" + firstVA.toString() + lastVA.value;
+            let virtual_account = "999980898AASASsa"
+            // nextValue = (parseInt(lastVA.value) + 1).toString();
+            // lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
+            // lastVA.save();
 
             console.log('VANumber : ' + virtual_account);
 
@@ -70,26 +74,26 @@ class PaymentController {
             // Administration fee
             totalPrice += 5000;
 
-            let data = {
-                type: "createbilling",
-                client_id: cid,
-                trx_id,
-                trx_amount: totalPrice,
-                billing_type: "c",
-                customer_name: schoolData.name,
-                virtual_account
-            }
-            let encryptedData = PaymentEncription.encrypt(data, cid, sck),
-                // 3001 => dev, 3002 => prod
-                request = await axios({
-                    method: 'post',
-                    headers: { 'Content-Type': 'application/json' },
-                    url: 'http://103.56.206.107:3002/create',
-                    data: {
-                        client_id: cid,
-                        data: encryptedData
-                    }
-                });
+            // let data = {
+            //     type: "createbilling",
+            //     client_id: cid,
+            //     trx_id,
+            //     trx_amount: totalPrice,
+            //     billing_type: "c",
+            //     customer_name: schoolData.name,
+            //     virtual_account
+            // }
+            // let encryptedData = PaymentEncription.encrypt(data, cid, sck),
+            //     // 3001 => dev, 3002 => prod
+            //     request = await axios({
+            //         method: 'post',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         url: 'http://103.56.206.107:3002/create',
+            //         data: {
+            //             client_id: cid,
+            //             data: encryptedData
+            //         }
+            //     });
 
             // create payment
             let payment = await PaymentModel.create({
@@ -125,7 +129,6 @@ class PaymentController {
                         payment.paidDate = null;
                         payment.status = 'waiting';
                         payment.save();
-                        return res.status(200).json({ payment });
                     }
                 }
                 else if (payment.status === 'waiting') {
@@ -137,9 +140,10 @@ class PaymentController {
                         payment.paidDate = Date.now();
                         payment.status = 'paid';
                         payment.save();
-                        return res.status(200).json({ payment });
                     }
                 }
+
+                return res.status(200).json({ message: "Payment updated" });
             });
         } catch (e) {
             return res.status(500).json({ message: e.message });

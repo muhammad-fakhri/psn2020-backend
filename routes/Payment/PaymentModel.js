@@ -45,8 +45,7 @@ let paymentSchema = new Schema({
     },
     paidDate: {
         type: Date,
-        default: null,
-        required: true
+        default: null
     }
 });
 
