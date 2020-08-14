@@ -7,7 +7,7 @@ const ContestRouter = require('./Contest/contestRouter');
 const TeamRouter = require('./Team/teamRouter');
 const SchoolRouter = require('./School/schoolRouter');
 const ParamRouter = require('./Params/ParamRouter');
-// const PaymentRouter = require('./Payment/PaymentRouter');
+const PaymentRouter = require('./Payment/PaymentRouter');
 
 // API Front Page Index
 router.get('/', function (req, res, next) {
@@ -21,6 +21,6 @@ router.use('/schools', SchoolRouter);
 router.use('/school', SchoolRouter);
 router.use('/students', StudentRouter);
 router.use('/teams', TeamRouter);
-// router.use('/payment', PaymentRouter);
+router.use('/payment', PaymentRouter);
 
 module.exports = router;
