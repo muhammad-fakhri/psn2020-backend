@@ -261,6 +261,28 @@ class TeamController {
             return res.status(500).json({ message: e.message })
         }
     }
+
+    static async multipleDelete(req, res) {
+        try {
+            let { teamIds } = req.body;
+
+            for (let index = 0; index < teamIds.length; index++) {
+                let team = await TeamModel.findById(teamIds[index]);
+                if (team) {
+                    if (!team.isFinal) {
+                        team.students.forEach(async function (student) {
+                            await StudentModel.findByIdAndUpdate(student, { team: null });
+                        });
+                        await team.remove();
+                    }
+                }
+            }
+            return res.status(200).json({ message: "Team deleted" });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
+        }
+
+    }
 }
 
 module.exports = TeamController;

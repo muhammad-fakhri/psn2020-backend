@@ -19,6 +19,7 @@ router.get(
 router.get("/:teamId", JWtController.checkToken, TeamController.get);
 router.delete("/:teamId", JWtController.checkToken, TeamController.delete);
 router.get("/", JWtController.checkToken, TeamController.list);
+router.post("/delete", JWtController.checkToken, validateBody(schemas.delete), TeamController.multipleDelete);
 router.post(
 	"/",
 	JWtController.checkToken,
