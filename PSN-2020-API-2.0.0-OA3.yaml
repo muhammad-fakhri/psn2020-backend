@@ -631,11 +631,14 @@ paths:
             schema:
               type: object
               properties:
-                email:
-                  type: string
-                  example: muhammadfakhri@gmail.com
+                emails:
+                  description: Array of subadmin email
+                  type: array
+                  items:
+                    type: string
+                    example: muhammadfakhri@gmail.com
               required:
-                - email
+                - emails
       security:
         - bearerAuth: []
       responses:
@@ -654,18 +657,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '404':
-          description: Delete subadmin failed, email not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Delete subadmin failed, email not found
-                required:
-                  - message
   /auth/login/admin:
     post:
       summary: Admin Login
@@ -1870,7 +1861,17 @@ components:
         - email
     AdminWithPassword:
       allOf:
-        - $ref: '#/components/schemas/Admin'
+        - type: object
+          properties:
+            name:
+              type: string
+              example: Muhammad Fakhri
+            email:
+              type: string
+              example: muhammadfakhri@gmail.com
+          required:
+            - name
+            - email
         - type: object
           properties:
             password:
