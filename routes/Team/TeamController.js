@@ -7,8 +7,7 @@ const ExcelJS = require('exceljs');
 class TeamController {
     static async create(req, res) {
         try {
-            let { name, contest, students } = req.value.body,
-                { sub } = req.decoded;
+            let { name, contest, students, schoolId } = req.value.body;
 
             // Check contest quota
             let contestData = await ContestModel.findById({ _id: contest });
@@ -30,7 +29,7 @@ class TeamController {
             }
 
             // create team
-            let team = await TeamModel.create({ name, contest, school: sub, students });
+            let team = await TeamModel.create({ name, contest, school: schoolId, students });
             students.forEach(async (student) => {
                 await StudentModel.findByIdAndUpdate(student, { team: team._id });
             })

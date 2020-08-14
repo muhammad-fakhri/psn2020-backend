@@ -19,6 +19,7 @@ module.exports = {
             name: joi.string().required(),
             contest: joi.string().required(),
             students: joi.array().required(),
+            schoolId: joi.string().required(),
         }),
         update: joi.object().keys({
             _id: joi.string().required(),
