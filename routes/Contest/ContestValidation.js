@@ -29,6 +29,9 @@ module.exports = {
             maxTeam: joi.number().required(),
             registrationStatus: joi.string().valid('open', 'close').required(),
             pricePerStudent: joi.number().required(),
+        }),
+        delete: joi.object().keys({
+            contestIds: joi.array().required(),
         })
     }
 }

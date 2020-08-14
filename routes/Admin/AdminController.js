@@ -34,25 +34,15 @@ class AdminController {
     }
 
     static async deleteSubadmin(req, res) {
-        let { email } = req.value.body;
+        let { emails } = req.value.body;
         try {
-            // Make sure account doesn't already exist
-            AdminModel.exists({ email }, async function (err, result) {
-                // If admin not exist
-                if (!result) return res.status(404).json({ message: 'Delete subadmin failed, account not found' });
-
-                let admin = await AdminModel.findOne({ email });
-
-                // can't delete super admin
-                if (admin.isSuperAdmin) {
-                    return res.status(409).json({ message: 'You cannot delete super admin !' });
+            for (let index = 0; index < emails.length; index++) {
+                let subadmin = await AdminModel.findOne({ email: emails[index] }).exec();
+                if (subadmin) {
+                    if (!subadmin.isSuperAdmin) subadmin.remove();
                 }
-
-                // If exist, delete admin account
-                admin.remove();
-
-                return res.status(200).json({ message: 'Subadmin deleted' });
-            })
+            }
+            return res.status(200).json({ message: 'Subadmin deleted' });
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }

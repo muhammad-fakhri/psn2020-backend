@@ -121,6 +121,40 @@ class ContestController {
             return res.status(500).json({ message: e.message });
         }
     }
+
+    static async multipleDelete(req, res) {
+        try {
+            let { contestIds } = req.body;
+            for (let index = 0; index < contestIds.length; index++) {
+                let teams = await TeamModel.find({ contest: contestIds[index] });
+
+                // check there is already team that is final or not
+                // for (let index = 0; index < teams.length; index++) {
+                //     if (teams[index].isFinal) {
+                //         return res.status(409).json({ message: "Delete contest fail, there are already team that is final" });
+                //     }
+                // }
+
+                // delete all team in the contest and update team id in each student data
+                for (let i = 0; i < teams.length; i++) {
+                    for (let j = 0; j < teams[i].students.length; j++) {
+                        await StudentModel.findByIdAndUpdate(teams[i].students[j], { team: null });
+                    }
+                    // delete team
+                    await teams[i].remove();
+                }
+
+                let contest = await ContestModel.findById(contestIds[index]);
+                fs.unlink(process.cwd() + '/uploads' + contest.imgPath, (err) => {
+                    if (err) console.log(err.message);;
+                });
+                await ContestModel.findByIdAndDelete(contestIds[index]);
+            }
+            return res.status(200).json({ message: "Contest deleted" });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
+        }
+    }
 }
 
 module.exports = ContestController;

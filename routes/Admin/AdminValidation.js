@@ -4,7 +4,6 @@ module.exports = {
     validateBody: (schema) => {
         return (req, res, next) => {
             const result = joi.validate(req.body, schema);
-            console.log(result);
             if (result.error) {
                 return res.status(400).json({ message: result.error.details[0].message });
             }
@@ -53,7 +52,7 @@ module.exports = {
             secret: joi.string().required(),
         }),
         deleteSubadmin: joi.object().keys({
-            email: joi.string().email().required()
+            emails: joi.array().required()
         })
     }
 }
