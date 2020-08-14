@@ -85,6 +85,7 @@ class SchoolController {
             school.email = email;
             school.address = address;
             school.phone = phone;
+            school.province = province;
             school.save();
             return res.status(200).json({ school });
         } catch (error) {
