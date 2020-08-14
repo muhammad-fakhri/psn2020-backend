@@ -22,7 +22,9 @@ class SchoolController {
     static async listBySchool(req, res) {
         try {
             let { privilege } = req.decoded,
-                { schoolId } = req.params;
+                { schoolId } = req.params,
+                { populateSchool } = req.query;
+            console.log((populateSchool === 'true' ? 'school' : ''));
 
             if (!schoolId) return res.status(400).json({ message: "Some required data not provided." });
 
@@ -30,7 +32,7 @@ class SchoolController {
                 if (privilege !== "admin") {
                     return res.status(403).json({ message: "You do not have access to this resource" });
                 }
-                let students = await StudentModel.find({});
+                let students = await StudentModel.find({}).populate((populateSchool === 'true' ? 'school' : ''));
                 return res.status(200).json({ students });
             }
 
@@ -38,7 +40,7 @@ class SchoolController {
                 // if school not exist
                 if (!result) return res.status(404).json({ message: "School not found" });
 
-                let students = await StudentModel.find({ school: schoolId });
+                let students = await StudentModel.find({ school: schoolId }).populate((populateSchool === 'true' ? 'school' : ''));
                 return res.status(200).json({ students });
             })
         } catch (e) {
