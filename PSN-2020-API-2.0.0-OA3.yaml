@@ -1431,13 +1431,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentFull'
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
   /payment/update:
-    post:
+    put:
       summary: Update Payment Status
       description: Update payment status from admin panel. Only usable by admin
       security:
@@ -1466,11 +1469,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentFull'
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PaymentNotFound'
   /payment/upload:
     post:
       summary: Upload Payment Receipt
@@ -1501,7 +1509,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentFull'
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1509,7 +1520,7 @@ paths:
   /payment/{paymentId}:
     get:
       summary: Get Payment Detail
-      description: Get payment detail by id. Only usable by admin
+      description: Get payment detail by id.
       security:
       - bearerAuth: []
       tags:
@@ -1529,12 +1540,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  payments:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PaymentFull'
-                required: 
-                  - payments
+                  payment: 
+                    $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
