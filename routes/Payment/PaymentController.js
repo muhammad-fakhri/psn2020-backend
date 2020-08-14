@@ -1,17 +1,16 @@
 let PaymentModel = require('./PaymentModel');
-// let TeamController = require('../Team/TeamController');
 let TeamModel = require('../Team/TeamModel');
-// let TeacherController = require('../Teacher/TeacherController');
 let SchoolModel = require('../School/SchoolModel');
-let StudentModel = require('../Student/StudentModel');
-let TeacherModel = require('../Teacher/TeacherModel');
 let PaymentEncription = require('../Midleware/PaymentEncription');
 let axios = require('axios');
-let BookingModel = require('../Booking/BookingModel');
 let mongoose = require('mongoose');
 // let cid = '00298', sck = '787b175aeb54a1e133fb71b5d2ebe11d'; // credential dev
 let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
 let ParamModel = require('../Params/ParamModel');
+const e = require('express');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 class PaymentController {
     static async getAllPayment(req, res) {
@@ -20,6 +19,16 @@ class PaymentController {
             return res.status(200).json({ payments });
         } catch (error) {
             return res.status(500).json({ message: error.message });
+        }
+    }
+
+    static async getPaymentDetail(req, res) {
+        let { paymentId } = req.params;
+        try {
+            let payment = await PaymentModel.findById(paymentId);
+            return res.status(200).json({ payment });
+        } catch (e) {
+            return res.status(500).json({ message: e.message });
         }
     }
 
@@ -53,6 +62,7 @@ class PaymentController {
                 console.log('price for team : ', teamData.name, price, teamData.students.length, teamData.contest.pricePerStudent);
 
                 totalPrice += price;
+                // Update team data
                 teamData.isFinal = true;
                 await teamData.save();
             }
@@ -98,120 +108,139 @@ class PaymentController {
         }
     }
 
-    static async callback(req, res, next) {
-        // urus lagi nanti, update bill ke database
+    static async updatePayment(req, res) {
         try {
-            let { client_id, data } = req.body,
-                decryptedData = PaymentEncription.decrypt(data, cid, sck);
-            // let bill = await BillModel.findByIdAndUpdate({_id:decryptedData.trx_id},{payment:{status:'paid',data:Date.now()}});
-            console.log(data, decryptedData);
-            let bill = await PaymentModel.findById({ _id: decryptedData.trx_id });
-            if (bill == null || bill == undefined) {
-                throw new Error(`Bill with id ${decryptedData.trx_id} not found`);
-            }
-            bill.payment.status = 'paid';
-            bill.payment.date = Date.now();
-            if (bill.type == 'accommodation') {
-                for (let i = 0; i < bill.accommodation.bookings.length; i++) {
-                    let booking = await BookingModel.findByIdAndUpdate({ _id: bill.accommodation.bookings[i] }, { isPaid: true });
-                    // console.log(booking);
+            let { paymentId, status } = req.body;
+            await PaymentModel.exists({ _id: paymentId }, async (err, result) => {
+                if (!result) return res.status(404).json({ message: "Payment not found" })
+
+                let payment = await PaymentModel.findById(paymentId).populate('teams');
+
+                if (payment.status === 'paid') {
+                    if (status === 'waiting') {
+                        for (let index = 0; index < payment.teams.length; index++) {
+                            payment.teams[index].isPaid = false;
+                            payment.teams[index].save();
+                        }
+                        payment.paidDate = null;
+                        payment.status = 'waiting';
+                        payment.save();
+                        return res.status(200).json({ payment });
+                    }
                 }
-            }
-            if (bill.type == 'registration') {
-                for (let i = 0; i < bill.registration.teams.length; i++) {
-                    await TeamModel.findByIdAndUpdate({ _id: bill.registration.teams[i] }, {
-                        isPaid2: true
-                    });
+                else if (payment.status === 'waiting') {
+                    if (status === 'paid') {
+                        for (let index = 0; index < payment.teams.length; index++) {
+                            payment.teams[index].isPaid = true;
+                            payment.teams[index].save();
+                        }
+                        payment.paidDate = Date.now();
+                        payment.status = 'paid';
+                        payment.save();
+                        return res.status(200).json({ payment });
+                    }
                 }
-                for (let i = 0; i < bill.registration.teachers.length; i++) {
-                    await TeacherModel.findByIdAndUpdate({ _id: bill.registration.teachers[i] }, {
-                        isPaid2: true
-                    });
-                }
-            }
-            await bill.save();
-            console.log({ trx: data.trx_id, message: "Bill berhasil diupdate" });
-            return res.json({ trx: data.trx_id, message: "Bill berhasil diupdate", status: "000" });
-        } catch (e) {
-            return res.json({ message: e.message });
-        }
-    }
-    static async getPaymentDetail(req, res) {
-        let { paymentId } = req.params;
-        try {
-            let payment = await PaymentModel.findById(paymentId);
-            return res.status(200).json({ payment });
+            });
         } catch (e) {
             return res.status(500).json({ message: e.message });
         }
     }
-    static async listBySchool(req, res) {
-        let { school } = req.params;
+
+    static async uploadReceipt(req, res) {
+        let { paymentId } = req.value.body;
+
         try {
-            let bills = await PaymentModel.find({ school });
-            return res.json({ bills });
-        } catch (e) {
-            return res.json({ message: e.message });
-        }
-    }
-    static async count(req, res) {
-        try {
-            let { school } = req.params,
-                totalBill = await PaymentModel.count({ school });
-            return res.status(200).json({ totalBill });
-        } catch (e) {
-            return res.status(400).json({ message: e.message, totalBill: null });
-        }
-    }
-    static async findByVA(req, res, next) {
-        try {
-            let { vaNumber } = req.body;
-            let bills = await PaymentModel.find({ VANumber: { $regex: vaNumber, $options: 'i' } }).populate('school');
-            return res.status(200).json(bills);
-        } catch (e) {
-            return res.status(400).json({ message: e.message });
-        }
-    }
-    static async forceUpdateBill(req, res) {
-        try {
-            let { billId } = req.body;
-            let bill = await PaymentModel.findById({ _id: billId });
-            if (bill) {
-                if (bill.payment.status != 'paid') {
-                    bill.payment.status = 'paid';
-                    bill.payment.date = Date.now();
-                    if (bill.type == 'accommodation') {
-                        for (let i = 0; i < bill.accommodation.bookings.length; i++) {
-                            let booking = await BookingModel.findByIdAndUpdate({ _id: bill.accommodation.bookings[i] }, { isPaid: true });
-                            // console.log(booking);
-                        }
-                    }
-                    if (bill.type == 'registration') {
-                        for (let i = 0; i < bill.registration.teams.length; i++) {
-                            await TeamModel.findByIdAndUpdate({ _id: bill.registration.teams[i] }, {
-                                isPaid2: true
-                            });
-                        }
-                        for (let i = 0; i < bill.registration.teachers.length; i++) {
-                            await TeacherModel.findByIdAndUpdate({ _id: bill.registration.teachers[i] }, {
-                                isPaid2: true
-                            });
-                        }
-                    }
-                    await bill.save();
-                    return res.status(200).json({ bill, message: "Bill status successfully change" });
+            if (!req.files) return res.status(400).json({ "message": "Payment receipt image is required" });
+            let image = req.files.paymentReceipt;
+            await PaymentModel.exists({ _id: paymentId }, async (err, result) => {
+                if (!result) return res.status(404).json({ message: "Payment not found" });
+
+                let extension = path.extname(image.name);
+                if (extension !== '.jpg' && extension !== '.png') {
+                    return res.status(400).json({ "message": "Please use .jpg or .png image" });
                 }
-                else {
-                    throw Error('Bill already paid');
-                }
-            }
-            else {
-                throw Error('Bill not found');
-            }
-        } catch (e) {
-            return res.status(400).json({ message: e.message });
+                image.name = uuidv4() + extension;
+                image.mv('./uploads/payment/' + image.name);
+                let imgPath = '/payment/' + image.name;
+                PaymentModel.findByIdAndUpdate(paymentId, { paymentReceipt: imgPath }, (err, payment) => {
+                    if (err) {
+                        return res.status(500).json({ message: err.message });
+                    } else {
+                        return res.status(200).json({ message: "Payment receipt uploaded" });
+                    }
+                });
+            });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
         }
     }
+
+    // static async callback(req, res, next) {
+    //     // urus lagi nanti, update bill ke database
+    //     try {
+    //         let { client_id, data } = req.body,
+    //             decryptedData = PaymentEncription.decrypt(data, cid, sck);
+    //         // let bill = await BillModel.findByIdAndUpdate({_id:decryptedData.trx_id},{payment:{status:'paid',data:Date.now()}});
+    //         console.log(data, decryptedData);
+    //         let bill = await PaymentModel.findById({ _id: decryptedData.trx_id });
+    //         if (bill == null || bill == undefined) {
+    //             throw new Error(`Bill with id ${decryptedData.trx_id} not found`);
+    //         }
+    //         bill.payment.status = 'paid';
+    //         bill.payment.date = Date.now();
+    //         if (bill.type == 'accommodation') {
+    //             for (let i = 0; i < bill.accommodation.bookings.length; i++) {
+    //                 let booking = await BookingModel.findByIdAndUpdate({ _id: bill.accommodation.bookings[i] }, { isPaid: true });
+    //                 // console.log(booking);
+    //             }
+    //         }
+    //         if (bill.type == 'registration') {
+    //             for (let i = 0; i < bill.registration.teams.length; i++) {
+    //                 await TeamModel.findByIdAndUpdate({ _id: bill.registration.teams[i] }, {
+    //                     isPaid2: true
+    //                 });
+    //             }
+    //             for (let i = 0; i < bill.registration.teachers.length; i++) {
+    //                 await TeacherModel.findByIdAndUpdate({ _id: bill.registration.teachers[i] }, {
+    //                     isPaid2: true
+    //                 });
+    //             }
+    //         }
+    //         await bill.save();
+    //         console.log({ trx: data.trx_id, message: "Bill berhasil diupdate" });
+    //         return res.json({ trx: data.trx_id, message: "Bill berhasil diupdate", status: "000" });
+    //     } catch (e) {
+    //         return res.json({ message: e.message });
+    //     }
+    // }
+
+    // static async listBySchool(req, res) {
+    //     let { school } = req.params;
+    //     try {
+    //         let bills = await PaymentModel.find({ school });
+    //         return res.json({ bills });
+    //     } catch (e) {
+    //         return res.json({ message: e.message });
+    //     }
+    // }
+    // static async count(req, res) {
+    //     try {
+    //         let { school } = req.params,
+    //             totalBill = await PaymentModel.count({ school });
+    //         return res.status(200).json({ totalBill });
+    //     } catch (e) {
+    //         return res.status(400).json({ message: e.message, totalBill: null });
+    //     }
+    // }
+    // static async findByVA(req, res, next) {
+    //     try {
+    //         let { vaNumber } = req.body;
+    //         let bills = await PaymentModel.find({ VANumber: { $regex: vaNumber, $options: 'i' } }).populate('school');
+    //         return res.status(200).json(bills);
+    //     } catch (e) {
+    //         return res.status(400).json({ message: e.message });
+    //     }
+    // }
 }
 
 module.exports = PaymentController;
