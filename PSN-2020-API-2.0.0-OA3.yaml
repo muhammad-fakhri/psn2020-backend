@@ -814,6 +814,42 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/ContestNotFound'
+  /contest/delete:
+    post:
+      summary: Multiple Delete contest
+      description: Multiple Delete contest. Only admin can use this endpoint.
+      tags:
+        - Contest
+      security: 
+      - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contestIds:
+                  description: Array of contest ID that you want to delete
+                  type: array
+                  items:
+                    type: string
+                    example: asdkajnsdasn
+              required:
+                - contestIds
+      responses:
+        '200':
+          description: Contest deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Message'  
+                  - example:
+                      message: Contest deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /contest/{contestId}:
     delete:
       summary: Delete contest
