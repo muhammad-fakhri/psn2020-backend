@@ -2289,15 +2289,6 @@ components:
               - $ref: '#/components/schemas/Message'
               - example:
                   message: Student data not found
-    # TeacherNotFound:
-    #   description: Teacher data with the given ID was not found
-    #   content:
-    #     application/json:
-    #       schema:
-    #         allOf:
-    #           - $ref: '#/components/schemas/Message'
-    #           - example:
-    #               message: Teacher data not found
     TeamNotFound:
       description: Team with the given ID was not found
       content:
