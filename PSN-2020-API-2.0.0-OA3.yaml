@@ -28,9 +28,9 @@ info:
 tags:
   - name: Admin
   - name: Auth
-  - name: Payment
   - name: Contest
   - name: Miscellaneous
+  - name: Payment
   - name: School
   - name: Student
   - name: Team
@@ -1388,25 +1388,153 @@ paths:
         '404': 
           $ref: '#/components/responses/SchoolNotFound'
   /payment:
+    get:
+      summary: List All Payment
+      description: List all payment in database. Only usable by admin
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentFull'
+                required: 
+                  - payments
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
-      summary: Create payment
+      summary: Create Payment
       description: Create new payment for team registration. Only usable by user
       security:
       - bearerAuth: []
       tags:
       - Payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
       responses:
         '201':
           description: Payment Created
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/PaymentFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /payment/update:
+    post:
+      summary: Update Payment Status
+      description: Update payment status from admin panel. Only usable by admin
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentId:
+                  type: string
+                  example: asdajd819kda
+                status:
+                  type: string
+                  enum: [waiting, paid]
+                  example: paid
+              required:
+                - paymentId
+                - status
+      responses:
+        '200':
+          description: Payment Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /payment/upload:
+    post:
+      summary: Upload Payment Receipt
+      description: Update payment receipt. Only usable by user
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                paymentId:
+                  type: string
+                  example: asdajd819kda
+                paymentReceipt:
+                  description: Payment receipt image, .jpg or .png format only
+                  type: string
+                  format: binary
+              required:
+                - paymentId
+                - status
+      responses:
+        '200':
+          description: Payment Receipt Uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFull'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /payment/{paymentId}:
+    get:
+      summary: Get Payment Detail
+      description: Get payment detail by id. Only usable by admin
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      parameters:
+        - in: path
+          name: paymentId
+          schema:
+            type: string
+          required: true
+          description: Payment ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  teams:
+                  payments:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TeamFull'
+                      $ref: '#/components/schemas/PaymentFull'
+                required: 
+                  - payments
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1993,10 +2121,56 @@ components:
     Payment:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        
+        school:
+          description: School ID
+          type: string
+          example: asdjadjabd
+        teams:
+          description: Array of Team ID
+          type: array
+          items:
+            type: string
+            example: dasd78dk12d1
+      required:
+        - school
+        - teams
+    PaymentFull:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: asdadsasda
+            totalPrice:
+              type: integer
+              minimum: 0
+              example: 250000
+            VANumber:
+              type: string
+              example: AGDA768ADA12
+          required:
+            - _id
+            - totalPrice
+            - VANumber
+        - $ref: '#/components/schemas/Payment'
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [waiting, paid]
+              default: waiting
+            paymentReceipt:
+              description: Path of payment receipt image
+              type: string
+              default: null
+            createdDate:
+              type: string
+            paidDate:
+              type: string
+          required:
+            - status
+            - createDate
+            - paymentReceipt
   responses:
     BadRequest:
       description: |   
