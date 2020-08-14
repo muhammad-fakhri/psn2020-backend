@@ -13,9 +13,15 @@ let mongoose = require('mongoose');
 let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
 let ParamModel = require('../Params/ParamModel');
 class PaymentController {
-    constructor(params) {
-
+    static async getAllPayment(req, res) {
+        try {
+            let payments = await PaymentModel.find({});
+            return res.status(200).json({ payments });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
     }
+
     static async create(req, res, next) {
         try { //only for school
             let { type, school } = req.value.body,
@@ -196,13 +202,13 @@ class PaymentController {
             return res.json({ message: e.message });
         }
     }
-    static async get(req, res) {
-        let { _id } = req.params;
+    static async getPaymentDetail(req, res) {
+        let { paymentId } = req.params;
         try {
-            let bill = await PaymentModel.findById({ _id });
-            return res.json({ bill });
+            let payment = await PaymentModel.findById(paymentId);
+            return res.status(200).json({ payment });
         } catch (e) {
-            return res.json({ message: e.message });
+            return res.status(500).json({ message: e.message });
         }
     }
     static async listBySchool(req, res) {
