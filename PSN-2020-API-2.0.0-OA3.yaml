@@ -1869,15 +1869,16 @@ paths:
                     type: string
                     example: asdjkas
       responses:
-        '201':
+        '200':
           description: Team deleted
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  team:
-                    $ref: '#/components/schemas/TeamWithId'
+                  message:
+                    type: string
+                    example: Team deleted
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
