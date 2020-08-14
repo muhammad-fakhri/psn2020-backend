@@ -4,7 +4,6 @@ let mongoose = require('mongoose'),
 let paymentSchema = new Schema({
     totalPrice: {
         type: Number,
-        default: 0,
         min: 0,
         required: true
     },
@@ -19,24 +18,30 @@ let paymentSchema = new Schema({
     },
     teams: [{
         type: Schema.Types.ObjectId,
-        ref: 'Team',
-        required: true
+        required: true,
+        ref: 'Team'
     }],
     status: {
         type: String,
         enum: [
-            "pending",
+            "waiting",
             "paid"
         ],
+        default: 'waiting',
         required: true
+    },
+    paymentReceipt: {
+        type: String,
+        default: null
     },
     createdDate: {
         type: Date,
-        required: true,
-        default: Date.now()
+        default: Date.now(),
+        required: true
     },
     paidDate: {
         type: Date,
+        default: null,
         required: true
     }
 });
