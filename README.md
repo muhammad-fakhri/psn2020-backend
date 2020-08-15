@@ -1,7 +1,7 @@
 # Pesta Sains Nasional 2020 API (PSN 2020 API)
 
 ## Description
-Pesta Sains Nasional is yearly event organized by FMIPA IPB. PSN 2020 API is an API for backend service of Pesta Sains Nasional 2020 Site
+Pesta Sains Nasional is a yearly event organized by FMIPA IPB. PSN 2020 API is API for backend service of Pesta Sains Nasional 2020 Official Site
 
 ## Developer
 Developer team by codepanda.id
