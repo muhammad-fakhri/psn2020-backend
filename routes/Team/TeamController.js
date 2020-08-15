@@ -138,10 +138,34 @@ class TeamController {
                     return res.status(409).json({ message: "Update team fail, team data with the given ID already final" });
                 }
 
-                // delete team id from old student members
-                team.students.forEach(async (student) => {
-                    await StudentModel.findByIdAndUpdate(student, { team: null });
-                });
+                // check the student
+                let isBreak = false;
+                for (let index = 0; index < students.length; index++) {
+                    if (isBreak) break;
+                    let student = await StudentModel.findById(students[index]).populate('team');
+                    if (student.team) {
+                        if (student.team.isFinal) {
+                            isBreak = true;
+                            return res.status(409).json({ message: "There are students who are selected, are in the final team" });
+                        }
+                    }
+                }
+
+                // update students from old team
+                for (let i = 0; i < students.length; i++) {
+                    let student = await StudentModel.findById(students[i]);
+                    if (student.team && student.team.toString() !== team._id.toString()) {
+                        let team = await TeamModel.findById(student.team);
+                        let studentArray = team.students;
+                        for (let j = 0; j < studentArray.length; j++) {
+                            if (studentArray[j].toString() === students[i].toString()) { studentArray.splice(j, 1); }
+                        }
+                        team.students = studentArray;
+                        team.save();
+                        student.team = null;
+                        student.save();
+                    }
+                }
 
                 // update team data
                 await team.updateOne({ name, contest, students });
