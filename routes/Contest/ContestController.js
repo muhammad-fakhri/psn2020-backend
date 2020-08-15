@@ -13,8 +13,8 @@ class ContestController {
             if (!req.files) return res.status(400).json({ "message": "Contest image not provided." });
             let image = req.files.contestImage;
             let extension = path.extname(image.name);
-            if (extension !== '.jpg' && extension !== '.png') {
-                return res.status(400).json({ "message": "Please use .jpg or .png image" });
+            if (extension !== '.jpg' && extension !== '.png' && extension !== '.svg') {
+                return res.status(400).json({ "message": "Please use .jpg, .svg or .png image" });
             }
             image.name = uuidv4() + extension;
             image.mv('./uploads/contest/' + image.name);
@@ -58,8 +58,8 @@ class ContestController {
                     // upload new image
                     image = req.files.contestImage;
                     let extension = path.extname(image.name);
-                    if (extension !== '.jpg' && extension !== '.png') {
-                        return res.status(400).json({ "message": "Please use .jpg or .png image" });
+                    if (extension !== '.jpg' && extension !== '.png' && extension !== '.svg') {
+                        return res.status(400).json({ "message": "Please use .jpg, .svg or .png image" });
                     }
                     image.name = uuidv4() + extension;
                     image.mv('./uploads/contest/' + image.name);
