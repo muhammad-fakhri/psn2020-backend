@@ -17,7 +17,7 @@ module.exports = {
     schemas: {
         createSubadmin: joi.object().keys({
             name: joi.string().required(),
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             password: joi.string()
                 .required()
                 .alphanum()
@@ -34,7 +34,7 @@ module.exports = {
         }),
         createSuperadmin: joi.object().keys({
             name: joi.string().required(),
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             isSuperAdmin: joi.boolean().required(),
             password: joi.string()
                 .required()

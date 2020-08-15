@@ -51,8 +51,8 @@ class AdminController {
     static async createSuperadmin(req, res) {
         try {
             let { name, email, password, isSuperAdmin, secret } = req.value.body;
-            const secretPass = "#$p3st4Sa!nsn4s10n4l$*";
-            if (secret !== secretPass) {
+            
+            if (secret !== process.env.SECRET) {
                 return res.status(401).json({ message: 'Create super admin fail, secret does not match' });
             }
 
