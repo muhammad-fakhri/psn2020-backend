@@ -28,7 +28,7 @@ class AuthController {
                 }
 
                 // Send verification email
-                await Mail.sendVerifyEmail(name, email, verifyEmailToken);
+                await Mail.sendVerifyEmail(name.toUpperCase().trim(), email.toLowerCase().trim(), verifyEmailToken);
 
                 // remove unnecessary information
                 schoolData = schoolData.toObject();
