@@ -17,7 +17,7 @@ module.exports = {
     schemas: {
         create: joi.object().keys({
             name: joi.string().required(),
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             phone: joi.string().required(),
             gender: joi.string().valid('male', 'female').required(),
             schoolId: joi.string().required()
@@ -25,7 +25,7 @@ module.exports = {
         update: joi.object().keys({
             _id: joi.string().required(),
             name: joi.string().required(),
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             phone: joi.string().required(),
             gender: joi.string().valid('male', 'female').required()
         }),

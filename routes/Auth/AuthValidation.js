@@ -16,11 +16,11 @@ module.exports = {
     },
     schemas: {
         schoolRegistration: joi.object().keys({
-            name: joi.string().min(6).max(50).required(),
-            email: joi.string().email().required(),
+            name: joi.string().min(6).max(50).uppercase().required(),
+            email: joi.string().email().trim().lowercase().required(),
             address: joi.string().required(),
             phone: joi.string().required(),
-            province: joi.string().required(),
+            province: joi.string().trim().uppercase().required(),
             password: joi.string()
                 .required()
                 .alphanum()
@@ -36,15 +36,15 @@ module.exports = {
                 })
         }),
         schoolLogin: joi.object().keys({
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             password: joi.string().required()
         }),
         adminLogin: joi.object().keys({
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             password: joi.string().required()
         }),
         resendVerifyEmail: joi.object().keys({
-            email: joi.string().email().required()
+            email: joi.string().email().trim().lowercase().required()
         }),
         changePassword: joi.object().keys({
             oldPassword: joi.string().required(),
@@ -63,10 +63,10 @@ module.exports = {
                 })
         }),
         forgotPassword: joi.object().keys({
-            email: joi.string().email().required()
+            email: joi.string().email().trim().lowercase().required()
         }),
         setForgotPassword: joi.object().keys({
-            email: joi.string().email().required(),
+            email: joi.string().email().trim().lowercase().required(),
             token: joi.string().required(),
             password: joi.string()
                 .required()

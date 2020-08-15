@@ -20,7 +20,7 @@ class AuthController {
 
                 // If not exist, create account
                 let verifyEmailToken = crypto.randomBytes(16).toString('hex');
-                let schoolData = await SchoolController.create(name.toUpperCase().trim(), email.toLowerCase().trim(), address, phone, province, password, verifyEmailToken);
+                let schoolData = await SchoolController.create(name, email, address, phone, province, password, verifyEmailToken);
 
                 // if there is error when create new school
                 if (schoolData.error) {
@@ -28,7 +28,7 @@ class AuthController {
                 }
 
                 // Send verification email
-                await Mail.sendVerifyEmail(name.toUpperCase().trim(), email.toLowerCase().trim(), verifyEmailToken);
+                await Mail.sendVerifyEmail(name, email, verifyEmailToken);
 
                 // remove unnecessary information
                 schoolData = schoolData.toObject();

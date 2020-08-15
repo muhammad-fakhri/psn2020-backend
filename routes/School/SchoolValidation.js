@@ -24,11 +24,11 @@ module.exports = {
     schemas: {
         updateSchoolDetail: joi.object().keys({
             schoolId: joi.string().required(),
-            name: joi.string().required(),
-            email: joi.string().email().required(),
+            name: joi.string().required().trim().uppercase(),
+            email: joi.string().email().trim().lowercase().required(),
             address: joi.string().required(),
             phone: joi.string().required(),
-            province: joi.string().required()
+            province: joi.string().trim().uppercase().required()
         }),
         deleteSchool: joi.alternatives().try(delete1, delete2)
     }
