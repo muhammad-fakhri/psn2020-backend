@@ -2026,7 +2026,7 @@ components:
         maxTeam: 
           type: integer
           example: 50
-        img: 
+        imgPath: 
           type: string
           example: https://wikipedia.com/img.jpg
         registrationStatus: 
