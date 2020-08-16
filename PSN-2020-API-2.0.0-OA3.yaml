@@ -1744,6 +1744,19 @@ paths:
         Update team. Cannot update a team that is final. If: 
         * admin, can update team in any school
         * user, only can update team in the same school
+      parameters:
+      - in: query
+        name: populateContest
+        schema:
+          type: boolean
+          default: false
+        description: Set "true" to populate contest in HTTP code 200 response
+      - in: query
+        name: populateStudent
+        schema:
+          type: boolean
+          default: false
+        description: Set "true" to populate students in HTTP code 200 response
       security:
       - bearerAuth: []
       tags:
