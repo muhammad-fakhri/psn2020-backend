@@ -118,7 +118,8 @@ class TeamController {
     static async update(req, res) {
         try {
             let { _id, name, contest, students } = req.value.body,
-                { sub, privilege } = req.decoded;
+                { sub, privilege } = req.decoded,
+                { populateContest, populateStudent } = req.query;
 
             await TeamModel.exists({ _id }, async function (err, result) {
                 if (!result) {
@@ -175,7 +176,9 @@ class TeamController {
                     await StudentModel.findByIdAndUpdate(student, { team: team._id });
                 });
 
-                let teamData = await TeamModel.findById(_id);
+                let teamData = await TeamModel.findById(_id)
+                    .populate((populateContest ? 'contest' : ''))
+                    .populate((populateStudent ? 'students' : ''));
                 return res.status(200).json({ team: teamData });
             });
         } catch (e) {
