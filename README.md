@@ -9,3 +9,5 @@ Developer team by codepanda.id
 
 ## Version
 This version v2.0.0 is the latest version and the production version.
+
+## New Section
