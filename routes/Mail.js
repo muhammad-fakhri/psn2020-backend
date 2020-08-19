@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 let environment = process.env;
+const googleAuth = require('../config/googleAuth');
 
 const SMTPTransporter = nodemailer.createTransport({
     host: environment.SMTP_SERVICE_HOST,
@@ -12,10 +13,19 @@ const SMTPTransporter = nodemailer.createTransport({
 });
 
 const GmailTransporter = nodemailer.createTransport({
-    service: environment.GMAIL_SERVICE_NAME,
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    service: 'Gmail',
+
     auth: {
+        type: 'OAuth2',
         user: environment.GMAIL_USER_NAME,
-        pass: environment.GMAIL_USER_PASSWORD
+        clientId: googleAuth.credentials.web.client_id,
+        clientSecret: googleAuth.credentials.web.client_secret,
+        refreshToken: googleAuth.tokens.refresh_token,
+        accessToken: googleAuth.tokens.access_token,
+        expires: googleAuth.tokens.expiry_date
     }
 });
 
