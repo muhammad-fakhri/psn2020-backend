@@ -38,7 +38,12 @@ class Mail {
             from: '"Pesta Sains Nasional 2020" <admin@psn.ipb.ac.id>',
             to: email,
             subject: "Verify Your Email",
-            text: "Please verify your email",
+            text: `
+                Hello ${name} 
+                Thank you for registering at Pesta Sains Nasional 2020 
+                Before you can continue please verify your email first by accessing the link below.
+                
+                ${environment.BASE_URL}/auth/email/verify?email=${email}&token=${token}`,
             html: `
                 <h2>Hello ${name}</h2>
                 <h3>Thank you for registering at Pesta Sains Nasional 2020<h3> 
@@ -60,11 +65,17 @@ class Mail {
             from: '"Pesta Sains Nasional 2020" <admin@psn.ipb.ac.id>',
             to: email,
             subject: "Reset Password",
-            text: "You can reset your password by click the link in this email",
+            text: `
+                Hello ${name}
+                You are requesting a password reset
+                You can reset your password by accessing the link below
+                
+                ${environment.FRONT_END_URL}/password/reset?email=${email}&token=${token}
+            `,
             html: `
                 <h2>Hello ${name}</h2>
                 <h3>You are requesting a password reset<h3> 
-                <p>You can reset your password by clicking the link below</p>
+                <p>You can reset your password by clicking the lin k below</p>
                 <a target="_blank" href="${environment.FRONT_END_URL}/password/reset?email=${email}&token=${token}">Click this link to reset your password</a>
             `,
         }, function (error, info) {
