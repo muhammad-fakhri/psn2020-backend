@@ -1696,7 +1696,16 @@ paths:
                   value:
                     _id: OOOOOOOOOOOOOO
                     name: Tim Menang
-                    contest: ASBDJA891E2E
+                    contest: {
+                      "_id": "string",
+                      "name": "CPSC",
+                      "memberPerTeam": 3,
+                      "maxTeam": 50,
+                      "imgPath": "https://wikipedia.com/img.jpg",
+                      "registrationStatus": "close",
+                      "pricePerStudent": 100000,
+                      "registeredTeam": 5
+                    }
                     students: [
                       {
                       "_id": "xxxxxxxxxxxxx",
