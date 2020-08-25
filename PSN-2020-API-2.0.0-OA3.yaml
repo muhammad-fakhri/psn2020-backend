@@ -1753,7 +1753,6 @@ paths:
                       "gender": "male",
                       "school": "vvvvvvvvvvvvvvvvv",
                       "team": "CCCCCCCCCCCCCCCCCC",
-                      "booking": "BBBBBBBBBBBBBBB"
                       },
                       {
                       "_id": "xxxxxxxxxxxxx",
@@ -1763,7 +1762,6 @@ paths:
                       "gender": "male",
                       "school": "vvvvvvvvvvvvvvvvv",
                       "team": "CCCCCCCCCCCCCCCCCC",
-                      "booking": "BBBBBBBBBBBBBBB"
                       },
                     ]
                     isFinal: false
@@ -2318,10 +2316,6 @@ components:
               type: string
               description: This student's team ID
               example: CCCCCCCCCCCCCCCCCC
-            booking:
-              type: string
-              description: Booking ID, if this student have ordered a accomodation
-              example: BBBBBBBBBBBBBBB
           required: 
             - school
     Team:
