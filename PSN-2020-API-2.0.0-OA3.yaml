@@ -1679,6 +1679,49 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/TeamFull'
+              examples:
+                Without using populate query params:
+                  value:
+                    _id: OOOOOOOOOOOOOO
+                    name: Tim Menang
+                    contest: ASBDJA891E2E
+                    students: [
+                      "SADASD891NEQW",
+                      "ADA1NQWKDNASA"
+                    ]
+                    isFinal: false
+                    isPaid: false
+                    school: ASDJA78SADK
+                Using populate query params:
+                  value:
+                    _id: OOOOOOOOOOOOOO
+                    name: Tim Menang
+                    contest: ASBDJA891E2E
+                    students: [
+                      {
+                      "_id": "xxxxxxxxxxxxx",
+                      "name": "Siswa A",
+                      "email": "siswaA@gmail.com",
+                      "phone": "081238123718237912",
+                      "gender": "male",
+                      "school": "vvvvvvvvvvvvvvvvv",
+                      "team": "CCCCCCCCCCCCCCCCCC",
+                      "booking": "BBBBBBBBBBBBBBB"
+                      },
+                      {
+                      "_id": "xxxxxxxxxxxxx",
+                      "name": "Siswa B",
+                      "email": "siswaB@gmail.com",
+                      "phone": "081238123718237912",
+                      "gender": "male",
+                      "school": "vvvvvvvvvvvvvvvvv",
+                      "team": "CCCCCCCCCCCCCCCCCC",
+                      "booking": "BBBBBBBBBBBBBBB"
+                      },
+                    ]
+                    isFinal: false
+                    isPaid: false
+                    school: ASSDASKDADSAD
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
