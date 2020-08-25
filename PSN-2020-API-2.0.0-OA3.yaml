@@ -1364,6 +1364,44 @@ paths:
                               type: boolean
                 required:
                   - students
+              examples:
+                Without using populate query params:
+                  value:
+                    students: [
+                    {
+                      "_id": "xxxxxxxxxxxxx",
+                      "name": "Siswa A",
+                      "email": "siswaA@gmail.com",
+                      "phone": "081238123718237912",
+                      "gender": "male",
+                      "school": "vvvvvvvvvvvvvvvvv",
+                      "team": "CCCCCCCCCCCCCCCCCC",
+                      "isPaid": true
+                    }
+                  ]
+                Using populate query params:
+                  value:
+                    students: [
+                    {
+                      "_id": "xxxxxxxxxxxxx",
+                      "name": "Siswa A",
+                      "email": "siswaA@gmail.com",
+                      "phone": "081238123718237912",
+                      "gender": "male",
+                      "school": {
+                        "_id": "xxxxxxxxxxxxxx",
+                        "name": "SMA Negeri 2 Kota Bogor",
+                        "email": "sman2bgr@gmail.com",
+                        "address": "Jl. Budi Agung",
+                        "province": "Jawa Barat",
+                        "phone": "081283639734",
+                        "isVerifiedEmail": false,
+                        "password": "asdljansjdbasjdba"
+                      },
+                      "team": "CCCCCCCCCCCCCCCCCC",
+                      "isPaid": true
+                    }
+                  ]
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
