@@ -97,7 +97,7 @@ class TeamController {
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
 						.populate(populateSchool === "true" ? "school" : "");
-					return res.status(200).json({ teams });
+					return res.status(200).json({ teams, message: "Confuse" });
 				});
 			} else if (contest) {
 				// check contest is exist or not
