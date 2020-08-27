@@ -26,7 +26,7 @@ let schoolSchema = new Schema({
     },
     password: {
         type: String,
-        select: false,
+        // select: false,
         required: true
     },
     resetPasswordToken: {
@@ -66,14 +66,6 @@ schoolSchema.pre('save', async function (next) {
         next(error);
     }
 });
-
-schoolSchema.methods.isValidPassword = async function (newPassword) {
-    try {
-        return await bcrypt.compare(newPassword, this.password);
-    } catch (error) {
-        throw new Error(error);
-    }
-}
 
 // create a model
 let School = mongoose.model('School', schoolSchema);

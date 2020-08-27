@@ -29,12 +29,9 @@ class SchoolController {
     }
 
     static async login(email, password) {
-        try {
-            let school = await SchoolModel.findOne({ email });
-            return await school.isValidPassword(password);
-        } catch (error) {
-            return res.status(500).json({ message: error.message });
-        }
+        let school = await SchoolModel.findOne({ email });
+        let passwordMatch = await bcrypt.compare(password, school.password);
+        return passwordMatch ? true : false;
     }
 
     static async listAllSchools(req, res, next) {
