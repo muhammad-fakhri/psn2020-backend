@@ -26,11 +26,9 @@ class TeamController {
 			for (let index = 0; index < students.length; index++) {
 				let student = await StudentModel.findById(students[index]);
 				if (student.team) {
-					return res
-						.status(409)
-						.json({
-							message: "Create team fail, some student already in a team",
-						});
+					return res.status(409).json({
+						message: "Create team fail, some student already in a team",
+					});
 				}
 			}
 
@@ -57,7 +55,13 @@ class TeamController {
 	static async list(req, res) {
 		try {
 			let { privilege } = req.decoded;
-			let { school, contest, populateContest, populateStudent } = req.query;
+			let {
+				school,
+				contest,
+				populateContest,
+				populateStudent,
+				populateSchool,
+			} = req.query;
 
 			// if no parameter is used
 			if (!school && !contest) {
@@ -159,12 +163,10 @@ class TeamController {
 
 				// check team already final or not
 				if (team.isFinal) {
-					return res
-						.status(409)
-						.json({
-							message:
-								"Update team fail, team data with the given ID already final",
-						});
+					return res.status(409).json({
+						message:
+							"Update team fail, team data with the given ID already final",
+					});
 				}
 
 				// check the student
@@ -177,12 +179,10 @@ class TeamController {
 					if (student.team) {
 						if (student.team.isFinal) {
 							isBreak = true;
-							return res
-								.status(409)
-								.json({
-									message:
-										"There are students who are selected, are in the final team",
-								});
+							return res.status(409).json({
+								message:
+									"There are students who are selected, are in the final team",
+							});
 						}
 					}
 				}
@@ -244,19 +244,15 @@ class TeamController {
 				}
 
 				if (team.isFinal) {
-					return res
-						.status(409)
-						.json({
-							message:
-								"Delete team fail, team data with the given ID already final",
-						});
+					return res.status(409).json({
+						message:
+							"Delete team fail, team data with the given ID already final",
+					});
 				} else if (team.isPaid) {
-					return res
-						.status(409)
-						.json({
-							message:
-								"Delete team fail, team data with the given ID already paid",
-						});
+					return res.status(409).json({
+						message:
+							"Delete team fail, team data with the given ID already paid",
+					});
 				}
 
 				team.students.forEach(async function (student) {
