@@ -26,6 +26,7 @@ let schoolSchema = new Schema({
     },
     password: {
         type: String,
+        select: false,
         required: true
     },
     resetPasswordToken: {
