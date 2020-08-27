@@ -7,55 +7,54 @@ let schoolSchema = new Schema({
 		type: String,
 		minlength: 6,
 		maxlength: 50,
-		required: true,
+		required: true
 	},
 	email: {
 		type: String,
 		required: true,
-		unique: true,
+		unique: true
 	},
 	address: {
-		type: String,
+		type: String
 	},
 	phone: {
-		type: String,
+		type: String
 	},
 	province: {
 		type: String,
-		required: true,
+		required: true
 	},
 	password: {
 		type: String,
-		// select: false,
-		required: true,
+		required: true
 	},
 	resetPasswordToken: {
-		type: String,
+		type: String
 	},
 	verifyEmailToken: {
-		type: String,
+		type: String
 	},
 	isVerifiedEmail: {
 		type: Boolean,
 		default: false,
-		required: true,
+		required: true
 	},
 	changeEmailToken: {
-		type: String,
+		type: String
 	},
 	verifyEmailDate: {
-		type: Date,
+		type: Date
 	},
 	createdAt: {
 		type: Date,
 		required: true,
-		default: Date.now(),
+		default: Date.now()
 	},
 	updatedAt: {
 		type: Date,
 		required: true,
-		default: Date.now(),
-	},
+		default: Date.now()
+	}
 });
 
 schoolSchema.pre("save", async function (next) {
@@ -66,14 +65,6 @@ schoolSchema.pre("save", async function (next) {
 		next(error);
 	}
 });
-
-schoolSchema.methods.isValidPassword = async function (newPassword) {
-	try {
-		return await bcrypt.compare(newPassword, this.password);
-	} catch (error) {
-		throw new Error(error);
-	}
-};
 
 // create a model
 let School = mongoose.model("School", schoolSchema);
