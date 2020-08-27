@@ -92,13 +92,13 @@ class TeamController {
 				// check school is exist or not
 				await SchoolModel.exists({ _id: school }, async function (err, result) {
 					// if not exist return empty array
-					return res.status(200).json({ message: "Finding teams" });
 					if (!result) return res.status(200).json({ teams });
 					teams = await TeamModel.find({ school })
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
 						.populate(populateSchool === "true" ? "school" : "");
 				});
+				return res.status(200).json({ message: "Finding teams" });
 			} else if (contest) {
 				// check contest is exist or not
 				await ContestModel.exists({ _id: contest }, async function (
