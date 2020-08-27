@@ -4,6 +4,22 @@ const StudentModel = require("../Student/StudentModel");
 const SchoolModel = require("../School/SchoolModel");
 const ExcelJS = require("exceljs");
 
+const removeTeamField = (teams) => {
+	let teamPopulatedData = new Array();
+	teams.forEach((team) => {
+		team = team.toObject();
+		delete team.school.password;
+		delete team.school.verifyEmailToken;
+		delete team.school.createdAt;
+		delete team.school.updatedAt;
+		delete team.school.resetPasswordToken;
+		delete team.school.verifyEmailToken;
+		delete team.school.verifyEmailDate;
+		teamPopulatedData.push(team);
+	});
+	return teamPopulatedData;
+}
+
 class TeamController {
 	static async create(req, res) {
 		try {
@@ -97,41 +113,26 @@ class TeamController {
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
 						.populate(populateSchool === "true" ? "school" : "");
-					return res.status(200).json({ teams, message: "Confuse" });
+					return res.status(200).json({ teams: removeTeamField(teams) });
 				});
 			} else if (contest) {
 				// check contest is exist or not
-				await ContestModel.exists({ _id: contest }, async function (
-					err,
-					result
-				) {
+				await ContestModel.exists({ _id: contest }, async function (err, result) {
 					// if not exist return empty array
 					if (!result) return res.status(200).json({ teams });
 					teams = await TeamModel.find({ contest })
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
 						.populate(populateSchool === "true" ? "school" : "");
+					return res.status(200).json({ teams: removeTeamField(teams) });
 				});
 			} else {
-				teams = await TeamModel.find({})
+				let teams = await TeamModel.find({})
 					.populate(populateContest === "true" ? "contest" : "")
 					.populate(populateStudent === "true" ? "students" : "")
 					.populate(populateSchool === "true" ? "school" : "");
+				return res.status(200).json({ teams: removeTeamField(teams) });
 			}
-
-			let teamPopulatedData = new Array();
-			teams.forEach((team) => {
-				team = team.toObject();
-				delete team.school.password;
-				delete team.school.verifyEmailToken;
-				delete team.school.createdAt;
-				delete team.school.updatedAt;
-				delete team.school.resetPasswordToken;
-				delete team.school.verifyEmailToken;
-				delete team.school.verifyEmailDate;
-				teamPopulatedData.push(team);
-			});
-			return res.status(200).json({ teams: teamPopulatedData });
 		} catch (e) {
 			return res.status(500).json({ message: e.message });
 		}
