@@ -97,10 +97,8 @@ class TeamController {
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
 						.populate(populateSchool === "true" ? "school" : "");
+					return res.status(200).json({ teams });
 				});
-				return res
-					.status(200)
-					.json({ message: `Finding teams with school id : ${school}` });
 			} else if (contest) {
 				// check contest is exist or not
 				await ContestModel.exists({ _id: contest }, async function (
