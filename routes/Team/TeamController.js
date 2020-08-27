@@ -81,7 +81,7 @@ class TeamController {
 					teams = await TeamModel.find({ school })
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
-						.populate(populateSchool === "true" ? "school" : "");
+						.populate(populateSchool === "true" ? "school" : "", "-password");
 					return res.status(200).json({ teams });
 				});
 			} else if (contest) {
@@ -95,14 +95,14 @@ class TeamController {
 					teams = await TeamModel.find({ contest })
 						.populate(populateContest === "true" ? "contest" : "")
 						.populate(populateStudent === "true" ? "students" : "")
-						.populate(populateSchool === "true" ? "school" : "");
+						.populate(populateSchool === "true" ? "school" : "", "-password");
 					return res.status(200).json({ teams });
 				});
 			} else {
 				teams = await TeamModel.find({})
 					.populate(populateContest === "true" ? "contest" : "")
 					.populate(populateStudent === "true" ? "students" : "")
-					.populate(populateSchool === "true" ? "school" : "");
+					.populate(populateSchool === "true" ? "school" : "", "-password");
 				return res.status(200).json({ teams });
 			}
 		} catch (e) {
