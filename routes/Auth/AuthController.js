@@ -121,12 +121,10 @@ class AuthController {
                         school.verifyEmailToken = null;
                         school.verifyEmailDate = Date.now();
                         school.save();
-
                         // redirect to front end "Email Verified Page"
                         return res.redirect(process.env.FRONT_END_URL + `/email/verified?name=${school.name}&email=${school.email}&message='Email verified'`)
                     } else {
                         return res.redirect(process.env.FRONT_END_URL + `/email/verified?name=${school.name}&email=${school.email}&message='Verify email failed, token is invalid'`)
-                        // return res.status(404).json({ message: 'Verify email failed, token is invalid' });
                     }
                 })
         } catch (e) {
@@ -150,6 +148,7 @@ class AuthController {
                 // generate new email verify token
                 let verifyEmailToken = crypto.randomBytes(16).toString('hex');
                 school.isVerifiedEmail = false;
+                school.verifyEmailDate = null;
                 school.verifyEmailToken = verifyEmailToken;
                 school.save();
 
