@@ -4,6 +4,8 @@ servers:
     description: Local Development Server
   - description: Production Server
     url: https://apipestasains.ipb.ac.id
+  - url: http://147.139.179.4:3001
+    description: Server
 info:
   description: |
     ## Description
