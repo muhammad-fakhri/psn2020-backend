@@ -1830,7 +1830,6 @@ paths:
                       "imgPath": "https://wikipedia.com/img.jpg",
                       "registrationStatus": "close",
                       "pricePerStudent": 100000,
-                      "registeredTeam": 5
                     }
                     students: [
                       {
