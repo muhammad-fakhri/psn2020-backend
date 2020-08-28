@@ -113,7 +113,7 @@ class AuthController {
                 function (err, school) {
                     // make sure account exist
                     if (!school) {
-                        return res.status(404).json({ message: 'Verify email failed, email not found' });
+                        return res.redirect(process.env.FRONT_END_URL + `/email/failed?&message='Verify email failed, email not found'`)
                     }
 
                     if (school.verifyEmailToken === req.query.token) {
@@ -121,10 +121,11 @@ class AuthController {
                         school.verifyEmailToken = null;
                         school.verifyEmailDate = Date.now();
                         school.save();
+                        
                         // redirect to front end "Email Verified Page"
                         return res.redirect(process.env.FRONT_END_URL + `/email/verified?name=${school.name}&email=${school.email}&message='Email verified'`)
                     } else {
-                        return res.redirect(process.env.FRONT_END_URL + `/email/verified?name=${school.name}&email=${school.email}&message='Verify email failed, token is invalid'`)
+                        return res.redirect(process.env.FRONT_END_URL + `/email/failed?name=${school.name}&email=${school.email}&message='Verify email failed, token is invalid'&token=${req.query.token}`)
                     }
                 })
         } catch (e) {
