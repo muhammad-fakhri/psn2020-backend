@@ -1545,7 +1545,7 @@ paths:
                     $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /payment/{schoolId}:
+  /payment/school/{schoolId}:
     get:
       summary: List Payment By School
       security:
