@@ -1543,6 +1543,20 @@ paths:
                 properties:
                   payment:
                     $ref: '#/components/schemas/PaymentFull'
+        '400':
+          description: |
+            Create Payment Fail  
+            Payment failure may occur for one or more of the following reasons:
+              1. No Team ID is provided. Message: No Team ID provided
+              2. One of the given teams is final. Message: The given team is final
+              3. Error during the create payment process at the payment gateway. Message: There is error when creating the payment, please contact the committee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /payment/school/{schoolId}:
