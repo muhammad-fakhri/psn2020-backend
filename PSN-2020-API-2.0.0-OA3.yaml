@@ -32,7 +32,7 @@ tags:
   - name: Auth
   - name: Contest
   - name: Miscellaneous
-  - name: Payment (can't be used yet)
+  - name: Payment
   - name: School
   - name: Student
   - name: Team
