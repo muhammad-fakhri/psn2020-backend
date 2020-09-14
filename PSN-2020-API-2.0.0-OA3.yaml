@@ -1572,7 +1572,7 @@ paths:
                   payments:
                     type: array
                     items:
-                      $ref: '#/components/schemas/PaymentFull'
+                      $ref: '#/components/schemas/PaymentFullWithoutSchool'
                 required: 
                   - payments
         '401':
@@ -2478,6 +2478,20 @@ components:
       required:
         - school
         - teams
+    PaymentWithoutSchool:
+      type: object
+      properties:
+        school:
+          type: string
+          description: School ID
+          example: KAJDABDA892
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamFull'
+      required:
+        - school
+        - teams
     PaymentFull:
       allOf:
         - type: object
@@ -2515,6 +2529,44 @@ components:
             - status
             - createDate
             - paymentReceipt
+    PaymentFullWithoutSchool:
+      allOf:
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: asdadsasda
+            totalPrice:
+              type: integer
+              minimum: 0
+              example: 250000
+            VANumber:
+              type: string
+              example: AGDA768ADA12
+          required:
+            - _id
+            - totalPrice
+            - VANumber
+        - $ref: '#/components/schemas/PaymentWithoutSchool'
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [waiting, paid]
+              default: waiting
+            paymentReceipt:
+              description: Path of payment receipt image
+              type: string
+              default: null
+            createdDate:
+              type: string
+            paidDate:
+              type: string
+          required:
+            - status
+            - createDate
+            - paymentReceipt
+  
   responses:
     BadRequest:
       description: |   
