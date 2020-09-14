@@ -21,6 +21,6 @@ router.use('/schools', SchoolRouter);
 router.use('/school', SchoolRouter);
 router.use('/students', StudentRouter);
 router.use('/teams', TeamRouter);
-// router.use('/payment', PaymentRouter);
+router.use('/payment', PaymentRouter);
 
 module.exports = router;
