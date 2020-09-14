@@ -1555,8 +1555,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  payment:
-                    $ref: '#/components/schemas/PaymentFull'
+                  message:
+                    type: string
+              examples:
+                No Team ID:
+                  value: 
+                    message: No Team ID provided
+                Team is final:
+                  value: 
+                    message: The given team is final
+                Error at Payment Gateway:
+                  value:
+                    message: There is error when creating the payment, please contact the committee
         '401':
           $ref: '#/components/responses/Unauthorized'
   /payment/school/{schoolId}:
