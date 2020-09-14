@@ -1523,7 +1523,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
     post:
       summary: Create Payment
-      description: Create new payment for team registration. Only usable by user
+      description: Create new payment for team registration.
       security:
       - bearerAuth: []
       tags:
@@ -1532,7 +1532,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Payment'
+              $ref: '#/components/schemas/PaymentCreate'
       responses:
         '201':
           description: Payment Created
@@ -1545,8 +1545,38 @@ paths:
                     $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+  /payment/{schoolId}:
+    get:
+      summary: List Payment By School
+      security:
+      - bearerAuth: []
+      tags:
+      - Payment
+      parameters:
+        - in: path
+          name: schoolId
+          schema:
+            type: string
+          required: true
+          description: School ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  school: 
+                    $ref: '#/components/schemas/SchoolWithId'
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentFull'
+                required: 
+                  - payments
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /payment/update:
     put:
       summary: Update Payment Status
@@ -1591,7 +1621,6 @@ paths:
   /payment/upload:
     post:
       summary: Upload Payment Receipt
-      description: Update payment receipt. Only usable by user
       security:
       - bearerAuth: []
       tags:
@@ -1637,14 +1666,11 @@ paths:
                     example: Payment receipt image is required
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/PaymentNotFound'
   /payment/{paymentId}:
     get:
       summary: Get Payment Detail
-      description: Get payment detail by id.
       security:
       - bearerAuth: []
       tags:
@@ -1668,8 +1694,6 @@ paths:
                     $ref: '#/components/schemas/PaymentFull'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/PaymentNotFound'
   /teams:
@@ -2426,7 +2450,7 @@ components:
             - isFinal
             - isPaid
             - school
-    Payment:
+    PaymentCreate:
       type: object
       properties:
         school:
@@ -2439,6 +2463,20 @@ components:
           items:
             type: string
             example: dasd78dk12d1
+      required:
+        - school
+        - teams
+    Payment:
+      type: object
+      properties:
+        school:
+          description: School ID
+          type: string
+          example: asdjadjabd
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamFull'
       required:
         - school
         - teams
