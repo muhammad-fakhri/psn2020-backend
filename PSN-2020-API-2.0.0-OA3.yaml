@@ -2470,9 +2470,7 @@ components:
       type: object
       properties:
         school:
-          description: School ID
-          type: string
-          example: asdjadjabd
+          $ref: '#/components/schemas/SchoolFull'
         teams:
           type: array
           items:
