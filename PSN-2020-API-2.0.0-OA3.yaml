@@ -2470,7 +2470,7 @@ components:
       type: object
       properties:
         school:
-          $ref: '#/components/schemas/SchoolFull'
+          $ref: '#/components/schemas/SchoolWithId'
         teams:
           type: array
           items:
