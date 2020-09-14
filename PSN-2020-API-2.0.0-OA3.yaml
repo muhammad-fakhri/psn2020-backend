@@ -2471,10 +2471,10 @@ components:
       properties:
         school:
           $ref: '#/components/schemas/SchoolFull'
-        teams:
-          type: array
-          items:
-            $ref: '#/components/schemas/TeamFull'
+        # teams:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/TeamFull'
       required:
         - school
         - teams
