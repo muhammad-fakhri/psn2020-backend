@@ -250,33 +250,42 @@ class PaymentController {
   //     }
   // }
 
-  // static async listBySchool(req, res) {
-  //     let { school } = req.params;
+  static async listBySchool(req, res) {
+    let { schoolId } = req.params;
+    try {
+      let school = await SchoolModel.findById(
+        schoolId,
+        "-password -createdAt -updatedAt -verifyEmailToken -__v"
+      );
+      let payments = await PaymentModel.find({ school: schoolId }).populate(
+        "teams"
+      );
+      return res.json({ school, payments });
+    } catch (e) {
+      return res.json({ message: e.message });
+    }
+  }
+
+  //   static async count(req, res) {
   //     try {
-  //         let bills = await PaymentModel.find({ school });
-  //         return res.json({ bills });
+  //       let { school } = req.params,
+  //         totalBill = await PaymentModel.count({ school });
+  //       return res.status(200).json({ totalBill });
   //     } catch (e) {
-  //         return res.json({ message: e.message });
+  //       return res.status(400).json({ message: e.message, totalBill: null });
   //     }
-  // }
-  // static async count(req, res) {
+  //   }
+  //   static async findByVA(req, res, next) {
   //     try {
-  //         let { school } = req.params,
-  //             totalBill = await PaymentModel.count({ school });
-  //         return res.status(200).json({ totalBill });
+  //       let { vaNumber } = req.body;
+  //       let bills = await PaymentModel.find({
+  //         VANumber: { $regex: vaNumber, $options: "i" },
+  //       }).populate("school");
+  //       return res.status(200).json(bills);
   //     } catch (e) {
-  //         return res.status(400).json({ message: e.message, totalBill: null });
+  //       return res.status(400).json({ message: e.message });
   //     }
-  // }
-  // static async findByVA(req, res, next) {
-  //     try {
-  //         let { vaNumber } = req.body;
-  //         let bills = await PaymentModel.find({ VANumber: { $regex: vaNumber, $options: 'i' } }).populate('school');
-  //         return res.status(200).json(bills);
-  //     } catch (e) {
-  //         return res.status(400).json({ message: e.message });
-  //     }
-  // }
+  //   }
 }
 
 module.exports = PaymentController;
