@@ -32,7 +32,12 @@ class PaymentController {
         if (!result) {
           return res.status(404).json({ message: "Payment not found" });
         }
-        let payment = await PaymentModel.findById(paymentId);
+        let payment = await PaymentModel.findById(paymentId)
+          .populate(
+            "school",
+            "-password -createdAt -updatedAt -verifyEmailToken -__v"
+          )
+          .populate("teams");
         return res.status(200).json({ payment });
       });
     } catch (e) {
