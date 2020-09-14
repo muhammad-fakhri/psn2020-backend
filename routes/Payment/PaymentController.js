@@ -4,8 +4,7 @@ let SchoolModel = require("../School/SchoolModel");
 let PaymentEncription = require("../Midleware/PaymentEncription");
 let axios = require("axios");
 let mongoose = require("mongoose");
-// let cid = '00298', sck = '787b175aeb54a1e133fb71b5d2ebe11d'; // credential dev
-// let cid = '00773', sck = '61c16a7e0dab54a0709ad748f485951e'; // credential prod
+const { ClientId, SecretKey } = require("../../config/PaymentCredential");
 let ParamModel = require("../Params/ParamModel");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
@@ -45,31 +44,40 @@ class PaymentController {
     }
   }
 
-  static async create(req, res, next) {
+  static async create(req, res) {
     try {
       let { school, teams } = req.value.body,
         totalPrice = 0,
-        cid = "00773",
-        sck = "61c16a7e0dab54a0709ad748f485951e",
         trx_id = mongoose.Types.ObjectId();
 
+      // check the teams, already final or not
+      for (let index = 0; index < teams.length; index++) {
+        let teamData = await TeamModel.findById(teams[index]);
+        if (teamData.isFinal)
+          return res.status(400).json({ message: "The given team is final" });
+      }
+
       // Generate virtual account number
-      // let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
-      // let firstVA = Math.floor(1000 + Math.random() * 9000);
-      // let virtual_account = "98800773" + firstVA.toString() + lastVA.value;
-      let virtual_account = "999980898AASASsa";
-      // nextValue = (parseInt(lastVA.value) + 1).toString();
-      // lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
-      // lastVA.save();
+      let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
+      let firstVA = Math.floor(1000 + Math.random() * 9000);
+      let virtual_account =
+        "988" + ClientId.toString() + firstVA.toString() + lastVA.value;
+
+      // update last VA value
+      let nextValue = (parseInt(lastVA.value) + 1).toString();
+      lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
+      lastVA.save();
 
       console.log("VANumber : " + virtual_account);
 
       // get school data
       let schoolData = await SchoolModel.findById({ _id: school });
 
-      // calculate price
+      // if no team provided, send 400
       if (teams.length == 0)
         return res.status(400).json({ message: "No team ID provided" });
+
+      // calculate price
       for (let index = 0; index < teams.length; index++) {
         let teamData = await TeamModel.findById(teams[index]).populate(
           "contest"
@@ -77,43 +85,40 @@ class PaymentController {
         let price =
           teamData.students.length * parseInt(teamData.contest.pricePerStudent);
 
-        console.log(
-          "price for team : ",
-          teamData.name,
-          price,
-          teamData.students.length,
-          teamData.contest.pricePerStudent
-        );
-
         totalPrice += price;
-        // Update team data
-        teamData.isFinal = true;
-        await teamData.save();
       }
 
       // Administration fee
       totalPrice += 5000;
 
-      // let data = {
-      //     type: "createbilling",
-      //     client_id: cid,
-      //     trx_id,
-      //     trx_amount: totalPrice,
-      //     billing_type: "c",
-      //     customer_name: schoolData.name,
-      //     virtual_account
-      // }
-      // let encryptedData = PaymentEncription.encrypt(data, cid, sck),
-      //     // 3001 => dev, 3002 => prod
-      //     request = await axios({
-      //         method: 'post',
-      //         headers: { 'Content-Type': 'application/json' },
-      //         url: 'http://103.56.206.107:3002/create',
-      //         data: {
-      //             client_id: cid,
-      //             data: encryptedData
-      //         }
-      //     });
+      // prepare encrypted data
+      let data = {
+        type: "createbilling",
+        trx_amount: totalPrice,
+        customer_name: schoolData.name,
+        customer_email: schoolData.email,
+        description: "Pembayaran Kompetisi PSN 2020",
+        trx_id,
+        virtual_account,
+        billing_type: "c",
+        client_id: ClientId,
+      };
+
+      console.log(data);
+
+      let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey),
+        response = await axios({
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          url: process.env.PAYMENT_GATEWAY_API,
+          data: {
+            client_id: ClientId,
+            data: encryptedData,
+          },
+        });
+
+      response = response.data;
+      console.log(response);
 
       // create payment
       let payment = await PaymentModel.create({
@@ -125,10 +130,30 @@ class PaymentController {
         status: "waiting",
         createdDate: Date.now(),
       });
+      await payment
+        .populate(
+          "school",
+          "-password -createdAt -updatedAt -verifyEmailToken -__v"
+        )
+        .populate("teams")
+        .execPopulate();
+
+      // set isFinal to true
+      teams.forEach(async (team) => {
+        await TeamModel.findOneAndUpdate({ _id: team }, { isFinal: true });
+      });
 
       return res.status(201).json({ payment });
     } catch (e) {
-      res.status(500).json({ message: e.message });
+      console.log("Payment: Create payment fail");
+      if (e.response.status == 400) {
+        res.status(400).json({
+          message:
+            "There is an error when creating the payment, please contact the committee",
+        });
+      } else {
+        res.status(500).json({ message: e.message });
+      }
     }
   }
 
