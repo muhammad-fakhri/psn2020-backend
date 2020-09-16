@@ -20,12 +20,12 @@ router.get(
   JWtController.checkToken,
   PaymentController.listBySchool
 );
-// router.post(
-//   "/",
-//   JWtController.checkToken,
-//   validateBody(schemas.create),
-//   PaymentController.create
-// );
+router.post(
+  "/",
+  JWtController.checkToken,
+  validateBody(schemas.create),
+  PaymentController.create
+);
 router.post(
   "/upload",
   JWtController.checkToken,

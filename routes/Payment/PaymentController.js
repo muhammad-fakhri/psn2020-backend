@@ -8,6 +8,8 @@ const { ClientId, SecretKey } = require("../../config/PaymentCredential");
 let ParamModel = require("../Params/ParamModel");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const { throws } = require("assert");
+const { Err } = require("joi/lib/errors");
 
 class PaymentController {
   static async getAllPayment(req, res) {
@@ -106,46 +108,62 @@ class PaymentController {
 
       console.log(data);
 
-      // let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey),
-      //   response = await axios({
-      //     method: "post",
-      //     headers: { "Content-Type": "application/json" },
-      //     url: process.env.PAYMENT_GATEWAY_API,
-      //     data: {
-      //       client_id: ClientId,
-      //       data: encryptedData,
-      //     },
-      //   });
+      let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey);
 
-      // response = response.data;
-      // console.log(response);
-
-      // create payment
-      let payment = await PaymentModel.create({
-        _id: trx_id,
-        totalPrice,
-        VANumber: virtual_account,
-        school,
-        teams,
-        status: "waiting",
-        createdDate: Date.now(),
-      });
-      await payment
-        .populate(
-          "school",
-          "-password -createdAt -updatedAt -verifyEmailToken -__v"
-        )
-        .populate("teams")
-        .execPopulate();
-
-      // set isFinal to true
-      teams.forEach(async (team) => {
-        await TeamModel.findOneAndUpdate({ _id: team }, { isFinal: true });
+      let response = await axios({
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        url: process.env.PAYMENT_GATEWAY_API,
+        data: {
+          client_id: ClientId,
+          data: encryptedData,
+          stage: process.env.NODE_ENV,
+        },
       });
 
-      return res.status(201).json({ payment });
+      response = response.data;
+
+      console.log(response);
+      if (response.status === "000") {
+        let decryptedData = PaymentEncription.decrypt(
+          response.data,
+          ClientId,
+          SecretKey
+        );
+        console.log(decryptedData);
+
+        // create payment
+        let payment = await PaymentModel.create({
+          _id: trx_id,
+          totalPrice,
+          VANumber: decryptedData.virtual_account,
+          school,
+          teams,
+          status: "waiting",
+          createdDate: Date.now(),
+        });
+        await payment
+          .populate(
+            "school",
+            "-password -createdAt -updatedAt -verifyEmailToken -__v"
+          )
+          .populate("teams")
+          .execPopulate();
+
+        // set isFinal to true
+        teams.forEach(async (team) => {
+          await TeamModel.findOneAndUpdate({ _id: team }, { isFinal: true });
+        });
+
+        return res.status(201).json({ payment });
+      } else {
+        throw new Error(
+          `There is an error when creating the payment, please contact the committee`
+        );
+      }
     } catch (e) {
       console.log("Payment: Create payment fail");
+      console.log(e.message);
       if (e.response.status == 400) {
         res.status(400).json({
           message:
@@ -236,44 +254,46 @@ class PaymentController {
     }
   }
 
-  // static async callback(req, res, next) {
-  //     // urus lagi nanti, update bill ke database
-  //     try {
-  //         let { client_id, data } = req.body,
-  //             decryptedData = PaymentEncription.decrypt(data, cid, sck);
-  //         // let bill = await BillModel.findByIdAndUpdate({_id:decryptedData.trx_id},{payment:{status:'paid',data:Date.now()}});
-  //         console.log(data, decryptedData);
-  //         let bill = await PaymentModel.findById({ _id: decryptedData.trx_id });
-  //         if (bill == null || bill == undefined) {
-  //             throw new Error(`Bill with id ${decryptedData.trx_id} not found`);
-  //         }
-  //         bill.payment.status = 'paid';
-  //         bill.payment.date = Date.now();
-  //         if (bill.type == 'accommodation') {
-  //             for (let i = 0; i < bill.accommodation.bookings.length; i++) {
-  //                 let booking = await BookingModel.findByIdAndUpdate({ _id: bill.accommodation.bookings[i] }, { isPaid: true });
-  //                 // console.log(booking);
-  //             }
-  //         }
-  //         if (bill.type == 'registration') {
-  //             for (let i = 0; i < bill.registration.teams.length; i++) {
-  //                 await TeamModel.findByIdAndUpdate({ _id: bill.registration.teams[i] }, {
-  //                     isPaid2: true
-  //                 });
-  //             }
-  //             for (let i = 0; i < bill.registration.teachers.length; i++) {
-  //                 await TeacherModel.findByIdAndUpdate({ _id: bill.registration.teachers[i] }, {
-  //                     isPaid2: true
-  //                 });
-  //             }
-  //         }
-  //         await bill.save();
-  //         console.log({ trx: data.trx_id, message: "Bill berhasil diupdate" });
-  //         return res.json({ trx: data.trx_id, message: "Bill berhasil diupdate", status: "000" });
-  //     } catch (e) {
-  //         return res.json({ message: e.message });
-  //     }
-  // }
+  static async callback(req, res, next) {
+    // Update payment data, set status to paid
+    try {
+      let { client_id, data } = req.body,
+        decryptedData = PaymentEncription.decrypt(data, ClientId, SecretKey);
+
+      console.log(data, decryptedData);
+
+      let payment = await PaymentModel.findById({ _id: decryptedData.trx_id });
+      if (payment == null || payment == undefined) {
+        throw new Error(`Payment with id ${decryptedData.trx_id} not found`);
+      }
+      payment.status = "paid";
+      payment.paidDate = Date.now();
+
+      // update team isPaid = true
+      for (let i = 0; i < payment.teams.length; i++) {
+        await TeamModel.findByIdAndUpdate(
+          { _id: payment.teams[i] },
+          {
+            isPaid: true,
+          }
+        );
+      }
+      await payment.save();
+
+      console.log({
+        trx: data.trx_id,
+        message: "Payment successfully updated",
+      });
+
+      return res.status(200).json({
+        trx: data.trx_id,
+        message: "Payment successfully updated",
+        status: "000",
+      });
+    } catch (e) {
+      return res.status(400).json({ message: e.message });
+    }
+  }
 
   static async listBySchool(req, res) {
     let { schoolId } = req.params;
