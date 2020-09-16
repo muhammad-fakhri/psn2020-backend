@@ -27,9 +27,13 @@ router.use("/teams", TeamRouter);
 router.use("/payment", PaymentRouter);
 router.post("/test", function (req, res, next) {
   let { name, role } = req.body;
+  let host = req.get("host");
+  let origin = req.get("origin");
   return res.status(200).json({
     name,
     role,
+    host,
+    origin,
     message: "Masuk datanya",
   });
 });
