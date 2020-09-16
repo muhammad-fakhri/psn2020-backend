@@ -40,7 +40,7 @@ router.put(
   PaymentController.updatePayment
 );
 
-// router.post('/callback', PaymentController.callback);
+router.post("/callback", PaymentController.callback);
 // router.get('/count/:school', JWtController.checkToken, PaymentController.count);
 // router.post('/search', PaymentController.findByVA);
 
