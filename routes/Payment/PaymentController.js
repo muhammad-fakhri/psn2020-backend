@@ -150,9 +150,12 @@ class PaymentController {
           .populate({ path: "teams", populate: { path: "contest" } })
           .execPopulate();
 
-        // set isFinal to true
+        // set isFinal to true and payment id
         teams.forEach(async (team) => {
-          await TeamModel.findOneAndUpdate({ _id: team }, { isFinal: true });
+          await TeamModel.findOneAndUpdate(
+            { _id: team },
+            { isFinal: true, paymentId: payment._id }
+          );
         });
 
         return res.status(201).json({ payment });
