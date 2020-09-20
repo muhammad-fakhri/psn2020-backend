@@ -2498,7 +2498,38 @@ components:
         teams:
           type: array
           items:
-            $ref: '#/components/schemas/TeamFull'
+            type: object
+            properties:
+              _id:
+                type: string
+                example: OOOOOOOOOOOOOO
+              name:
+                type: string
+                example: Tim Menang
+              contest:
+                $ref: '#/components/schemas/ContestWithId'
+              students:
+                type: array
+                description: Array of student ID
+                items:
+                  type: string
+              isFinal:
+                type: boolean
+                example: false
+              isPaid:
+                type: boolean
+                example: true
+              school:
+                type: string
+                description: School ID
+            required:
+              - _id
+              - name
+              - contest
+              - students
+              - isFinal
+              - isPaid
+              - school
       required:
         - school
         - teams
