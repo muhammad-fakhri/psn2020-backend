@@ -19,7 +19,7 @@ class PaymentController {
           "school",
           "-password -createdAt -updatedAt -verifyEmailToken -__v"
         )
-        .populate("teams");
+        .populate({ path: "teams", populate: { path: "contest" } });
       return res.status(200).json({ payments });
     } catch (error) {
       return res.status(500).json({ message: error.message });
@@ -38,7 +38,7 @@ class PaymentController {
             "school",
             "-password -createdAt -updatedAt -verifyEmailToken -__v"
           )
-          .populate("teams");
+          .populate({ path: "teams", populate: { path: "contest" } });
         return res.status(200).json({ payment });
       });
     } catch (e) {
@@ -147,7 +147,7 @@ class PaymentController {
             "school",
             "-password -createdAt -updatedAt -verifyEmailToken -__v"
           )
-          .populate("teams")
+          .populate({ path: "teams", populate: { path: "contest" } })
           .execPopulate();
 
         // set isFinal to true
@@ -302,9 +302,10 @@ class PaymentController {
         schoolId,
         "-password -createdAt -updatedAt -verifyEmailToken -__v"
       );
-      let payments = await PaymentModel.find({ school: schoolId }).populate(
-        "teams"
-      );
+      let payments = await PaymentModel.find({ school: schoolId }).populate({
+        path: "teams",
+        populate: { path: "contest" },
+      });
       return res.json({ school, payments });
     } catch (e) {
       return res.json({ message: e.message });
