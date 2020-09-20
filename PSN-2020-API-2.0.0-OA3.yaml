@@ -1786,6 +1786,7 @@ paths:
                     isFinal: false
                     isPaid: false
                     school: ASDJA78SADK
+                    paymentId: asdasndasnlad
                 Using populate query params:
                   value:
                     _id: OOOOOOOOOOOOOO
@@ -1822,6 +1823,7 @@ paths:
                     ]
                     isFinal: false
                     isPaid: false
+                    paymentId: asdasndasnlad
                     school: {
                       "_id": "xxxxxxxxxxxxxx",
                       "name": "SMA Negeri 2 Kota Bogor",
@@ -2470,8 +2472,9 @@ components:
             school:
               type: string
               description: School ID
-            payment:  
-              $ref: '#/components/schemas/PaymentFull'
+            paymentId:  
+              type: string
+              format: uuid
           required:
             - isFinal
             - isPaid
