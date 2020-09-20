@@ -2470,11 +2470,8 @@ components:
             school:
               type: string
               description: School ID
-            payment:
-              anyOf:
-              - $ref: '#/components/schemas/PaymentFull'
-              - type: string
-                nullable: true
+            payment:  
+              $ref: '#/components/schemas/PaymentFull'
           required:
             - isFinal
             - isPaid
