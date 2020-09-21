@@ -27,6 +27,6 @@ This version v2.0.0 is the latest version and the production version.
 5. Seed data to mongodb by using mongo-seeding-cli. You must first install mongo-seeding-cli using these command  
     `npm install -g mongo-seeding-cli`  
    then run the seed command  
-    `seed -u 'mongodb://127.0.0.1:27017/mydb' --drop-database ./data-import`
+    `seed -u 'mongodb://{YOUR MONGODB_USERNAME}:{YOUR_MONGODB_PASSWORD}@127.0.0.1:27017/psn2020?authSource=admin' --drop-database ./data-import`
 
 6. Done
