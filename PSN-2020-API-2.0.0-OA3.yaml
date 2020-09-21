@@ -1645,6 +1645,7 @@ paths:
   /payment/upload:
     post:
       summary: Upload Payment Receipt
+      description: This will updated status to "waiting-confirm"
       security:
       - bearerAuth: []
       tags:
@@ -2576,7 +2577,7 @@ components:
           properties:
             status:
               type: string
-              enum: [waiting, paid]
+              enum: [waiting, paid, waiting-confirm]
               default: waiting
             paymentReceipt:
               description: Path of payment receipt image
