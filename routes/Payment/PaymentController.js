@@ -184,7 +184,7 @@ class PaymentController {
         let payment = await PaymentModel.findById(paymentId).populate("teams");
 
         if (payment.status === "paid") {
-          if (status === "waiting") {
+          if (status === "waiting" || status === "waiting-confirm") {
             for (let index = 0; index < payment.teams.length; index++) {
               payment.teams[index].isPaid = false;
               payment.teams[index].save();
@@ -193,7 +193,10 @@ class PaymentController {
             payment.status = "waiting";
             payment.save();
           }
-        } else if (payment.status === "waiting") {
+        } else if (
+          payment.status === "waiting" ||
+          payment.status === "waiting-confirm"
+        ) {
           if (status === "paid") {
             for (let index = 0; index < payment.teams.length; index++) {
               payment.teams[index].isPaid = true;
