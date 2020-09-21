@@ -70,8 +70,6 @@ class PaymentController {
       lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
       lastVA.save();
 
-      console.log("VANumber : " + virtual_account);
-
       // get school data
       let schoolData = await SchoolModel.findById({ _id: school });
 
@@ -106,8 +104,6 @@ class PaymentController {
         client_id: ClientId,
       };
 
-      console.log(data);
-
       let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey);
 
       let response = await axios({
@@ -123,13 +119,13 @@ class PaymentController {
 
       response = response.data;
 
-      console.log(response);
       if (response.status === "000") {
         let decryptedData = PaymentEncription.decrypt(
           response.data,
           ClientId,
           SecretKey
         );
+        console.log("Payment: Create payment success");
         console.log(decryptedData);
 
         // create payment
@@ -263,8 +259,6 @@ class PaymentController {
       let { client_id, data } = req.body,
         decryptedData = PaymentEncription.decrypt(data, ClientId, SecretKey);
 
-      console.log(data, decryptedData);
-
       let payment = await PaymentModel.findById({ _id: decryptedData.trx_id });
       if (payment == null || payment == undefined) {
         throw new Error(`Payment with id ${decryptedData.trx_id} not found`);
@@ -284,13 +278,13 @@ class PaymentController {
       await payment.save();
 
       console.log({
+        message: "Payment: Payment successfully paid",
         trx: decryptedData.trx_id,
-        message: "Payment successfully updated",
       });
 
       return res.status(200).json({
         trx: decryptedData.trx_id,
-        message: "Payment successfully updated",
+        message: "Payment successfully paid",
         status: "000",
       });
     } catch (e) {
