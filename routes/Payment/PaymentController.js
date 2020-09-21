@@ -284,12 +284,12 @@ class PaymentController {
       await payment.save();
 
       console.log({
-        trx: data.trx_id,
+        trx: decryptedData.trx_id,
         message: "Payment successfully updated",
       });
 
       return res.status(200).json({
-        trx: data.trx_id,
+        trx: decryptedData.trx_id,
         message: "Payment successfully updated",
         status: "000",
       });
