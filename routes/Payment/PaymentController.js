@@ -236,7 +236,7 @@ class PaymentController {
         let imgPath = "/payment/" + image.name;
         PaymentModel.findByIdAndUpdate(
           paymentId,
-          { paymentReceipt: imgPath },
+          { paymentReceipt: imgPath, status: "waiting-confirm" },
           (err, payment) => {
             if (err) {
               return res.status(500).json({ message: err.message });
