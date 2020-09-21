@@ -9,7 +9,7 @@ const cors = require("cors");
 
 const app = express();
 const mongoose = require("mongoose");
-const mongoServer = "mongodb://localhost:27017/psn2020";
+const mongoServer = `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@localhost:27017/psn2020?authSource=admin`;
 mongoose.connect(mongoServer, { useNewUrlParser: true, autoIndex: false });
 mongoose.set("useNewUrlParser", true);
 mongoose.set("useFindAndModify", false);
