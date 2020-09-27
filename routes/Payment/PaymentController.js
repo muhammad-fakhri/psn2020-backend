@@ -47,131 +47,134 @@ class PaymentController {
   }
 
   static async create(req, res) {
-    try {
-      let { school, teams } = req.value.body,
-        totalPrice = 0,
-        trx_id = mongoose.Types.ObjectId();
+    return res.status(403).json({ message: "Payment is closed" });
 
-      // check the teams, already final or not
-      for (let index = 0; index < teams.length; index++) {
-        let teamData = await TeamModel.findById(teams[index]);
-        if (teamData.isFinal)
-          return res.status(400).json({ message: "The given team is final" });
-      }
+    // Uncomment code below for allowing create payment
+    // try {
+    //   let { school, teams } = req.value.body,
+    //     totalPrice = 0,
+    //     trx_id = mongoose.Types.ObjectId();
 
-      // Generate virtual account number
-      let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
-      let firstVA = Math.floor(1000 + Math.random() * 9000);
-      let virtual_account =
-        "988" + ClientId.toString() + firstVA.toString() + lastVA.value;
+    //   // check the teams, already final or not
+    //   for (let index = 0; index < teams.length; index++) {
+    //     let teamData = await TeamModel.findById(teams[index]);
+    //     if (teamData.isFinal)
+    //       return res.status(400).json({ message: "The given team is final" });
+    //   }
 
-      // update last VA value
-      let nextValue = (parseInt(lastVA.value) + 1).toString();
-      lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
-      lastVA.save();
+    //   // Generate virtual account number
+    //   let lastVA = await ParamModel.findOne({ code: "LAST_VA" });
+    //   let firstVA = Math.floor(1000 + Math.random() * 9000);
+    //   let virtual_account =
+    //     "988" + ClientId.toString() + firstVA.toString() + lastVA.value;
 
-      // get school data
-      let schoolData = await SchoolModel.findById({ _id: school });
+    //   // update last VA value
+    //   let nextValue = (parseInt(lastVA.value) + 1).toString();
+    //   lastVA.value = "0".repeat(4 - nextValue.length) + nextValue;
+    //   lastVA.save();
 
-      // if no team provided, send 400
-      if (teams.length == 0)
-        return res.status(400).json({ message: "No team ID provided" });
+    //   // get school data
+    //   let schoolData = await SchoolModel.findById({ _id: school });
 
-      // calculate price
-      for (let index = 0; index < teams.length; index++) {
-        let teamData = await TeamModel.findById(teams[index]).populate(
-          "contest"
-        );
-        let price =
-          teamData.students.length * parseInt(teamData.contest.pricePerStudent);
+    //   // if no team provided, send 400
+    //   if (teams.length == 0)
+    //     return res.status(400).json({ message: "No team ID provided" });
 
-        totalPrice += price;
-      }
+    //   // calculate price
+    //   for (let index = 0; index < teams.length; index++) {
+    //     let teamData = await TeamModel.findById(teams[index]).populate(
+    //       "contest"
+    //     );
+    //     let price =
+    //       teamData.students.length * parseInt(teamData.contest.pricePerStudent);
 
-      // Administration fee
-      totalPrice += 5000;
+    //     totalPrice += price;
+    //   }
 
-      // prepare encrypted data
-      let data = {
-        type: "createbilling",
-        trx_amount: totalPrice,
-        customer_name: schoolData.name,
-        customer_email: schoolData.email,
-        description: "Pembayaran Kompetisi PSN 2020",
-        trx_id,
-        virtual_account,
-        billing_type: "c",
-        client_id: ClientId,
-      };
+    //   // Administration fee
+    //   totalPrice += 5000;
 
-      let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey);
+    //   // prepare encrypted data
+    //   let data = {
+    //     type: "createbilling",
+    //     trx_amount: totalPrice,
+    //     customer_name: schoolData.name,
+    //     customer_email: schoolData.email,
+    //     description: "Pembayaran Kompetisi PSN 2020",
+    //     trx_id,
+    //     virtual_account,
+    //     billing_type: "c",
+    //     client_id: ClientId,
+    //   };
 
-      let response = await axios({
-        method: "post",
-        headers: { "Content-Type": "application/json" },
-        url: process.env.PAYMENT_GATEWAY_API,
-        data: {
-          client_id: ClientId,
-          data: encryptedData,
-          stage: process.env.NODE_ENV,
-        },
-      });
+    //   let encryptedData = PaymentEncription.encrypt(data, ClientId, SecretKey);
 
-      response = response.data;
+    //   let response = await axios({
+    //     method: "post",
+    //     headers: { "Content-Type": "application/json" },
+    //     url: process.env.PAYMENT_GATEWAY_API,
+    //     data: {
+    //       client_id: ClientId,
+    //       data: encryptedData,
+    //       stage: process.env.NODE_ENV,
+    //     },
+    //   });
 
-      if (response.status === "000") {
-        let decryptedData = PaymentEncription.decrypt(
-          response.data,
-          ClientId,
-          SecretKey
-        );
-        console.log("Payment: Create payment success");
-        console.log(decryptedData);
+    //   response = response.data;
 
-        // create payment
-        let payment = await PaymentModel.create({
-          _id: trx_id,
-          totalPrice,
-          VANumber: decryptedData.virtual_account,
-          school,
-          teams,
-          status: "waiting",
-          createdDate: Date.now(),
-        });
-        await payment
-          .populate(
-            "school",
-            "-password -createdAt -updatedAt -verifyEmailToken -__v"
-          )
-          .populate({ path: "teams", populate: { path: "contest" } })
-          .execPopulate();
+    //   if (response.status === "000") {
+    //     let decryptedData = PaymentEncription.decrypt(
+    //       response.data,
+    //       ClientId,
+    //       SecretKey
+    //     );
+    //     console.log("Payment: Create payment success");
+    //     console.log(decryptedData);
 
-        // set isFinal to true and payment id
-        teams.forEach(async (team) => {
-          await TeamModel.findOneAndUpdate(
-            { _id: team },
-            { isFinal: true, paymentId: payment._id }
-          );
-        });
+    //     // create payment
+    //     let payment = await PaymentModel.create({
+    //       _id: trx_id,
+    //       totalPrice,
+    //       VANumber: decryptedData.virtual_account,
+    //       school,
+    //       teams,
+    //       status: "waiting",
+    //       createdDate: Date.now(),
+    //     });
+    //     await payment
+    //       .populate(
+    //         "school",
+    //         "-password -createdAt -updatedAt -verifyEmailToken -__v"
+    //       )
+    //       .populate({ path: "teams", populate: { path: "contest" } })
+    //       .execPopulate();
 
-        return res.status(201).json({ payment });
-      } else {
-        throw new Error(
-          `There is an error when creating the payment, please contact the committee`
-        );
-      }
-    } catch (e) {
-      console.log("Payment: Create payment fail");
-      console.log(e.message);
-      if (e.response.status == 400) {
-        res.status(400).json({
-          message:
-            "There is an error when creating the payment, please contact the committee",
-        });
-      } else {
-        res.status(500).json({ message: e.message });
-      }
-    }
+    //     // set isFinal to true and payment id
+    //     teams.forEach(async (team) => {
+    //       await TeamModel.findOneAndUpdate(
+    //         { _id: team },
+    //         { isFinal: true, paymentId: payment._id }
+    //       );
+    //     });
+
+    //     return res.status(201).json({ payment });
+    //   } else {
+    //     throw new Error(
+    //       `There is an error when creating the payment, please contact the committee`
+    //     );
+    //   }
+    // } catch (e) {
+    //   console.log("Payment: Create payment fail");
+    //   console.log(e.message);
+    //   if (e.response.status == 400) {
+    //     res.status(400).json({
+    //       message:
+    //         "There is an error when creating the payment, please contact the committee",
+    //     });
+    //   } else {
+    //     res.status(500).json({ message: e.message });
+    //   }
+    // }
   }
 
   static async updatePayment(req, res) {
