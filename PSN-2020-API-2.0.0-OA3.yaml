@@ -1569,6 +1569,16 @@ paths:
                     message: There is error when creating the payment, please contact the committee
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Payment is closed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Payment is closed
   /payment/school/{schoolId}:
     get:
       summary: List Payment By School
